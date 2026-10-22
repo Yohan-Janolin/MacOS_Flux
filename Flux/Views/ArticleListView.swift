@@ -7,26 +7,62 @@ struct ArticleListView: View {
     @Binding var selection: String?
     private let filter: SidebarSelection
 
+    private let isSearching: Bool
+
     /// `folderFeedURLs` : adresses des flux du dossier quand `filter` est `.folder`
-    init(filter: SidebarSelection, selection: Binding<String?>, folderFeedURLs: [String] = []) {
+    /// `searchText` : recherche dans le titre et le résumé (vide = pas de recherche)
+    init(filter: SidebarSelection, selection: Binding<String?>, folderFeedURLs: [String] = [], searchText: String = "") {
         self.filter = filter
         self._selection = selection
+        self.isSearching = !searchText.isEmpty
 
         // L'article sélectionné reste visible dans "Non lus" même une fois marqué comme lu
         let sticky = selection.wrappedValue ?? ""
+        let urls = folderFeedURLs
+        let q = searchText
         let predicate: Predicate<Article>?
-        switch filter {
-        case .all:
-            predicate = nil
-        case .unread:
-            predicate = #Predicate { !$0.isRead || $0.key == sticky }
-        case .starred:
-            predicate = #Predicate { $0.isStarred }
-        case .feed(let url):
-            predicate = #Predicate { $0.feedURL == url }
-        case .folder:
-            let urls = folderFeedURLs
-            predicate = #Predicate { urls.contains($0.feedURL) }
+
+        if q.isEmpty {
+            switch filter {
+            case .all:
+                predicate = nil
+            case .unread:
+                predicate = #Predicate { !$0.isRead || $0.key == sticky }
+            case .starred:
+                predicate = #Predicate { $0.isStarred }
+            case .feed(let url):
+                predicate = #Predicate { $0.feedURL == url }
+            case .folder:
+                predicate = #Predicate { urls.contains($0.feedURL) }
+            }
+        } else {
+            // Même filtres, restreints aux articles dont le titre ou le résumé contient la recherche
+            switch filter {
+            case .all:
+                predicate = #Predicate {
+                    $0.title.localizedStandardContains(q) || $0.summary.localizedStandardContains(q)
+                }
+            case .unread:
+                predicate = #Predicate {
+                    (!$0.isRead || $0.key == sticky)
+                        && ($0.title.localizedStandardContains(q) || $0.summary.localizedStandardContains(q))
+                }
+            case .starred:
+                predicate = #Predicate {
+                    $0.isStarred
+                        && ($0.title.localizedStandardContains(q) || $0.summary.localizedStandardContains(q))
+                }
+            case .feed(let url):
+                predicate = #Predicate {
+                    $0.feedURL == url
+                        && ($0.title.localizedStandardContains(q) || $0.summary.localizedStandardContains(q))
+                }
+            case .folder:
+                predicate = #Predicate {
+                    urls.contains($0.feedURL)
+                        && ($0.title.localizedStandardContains(q) || $0.summary.localizedStandardContains(q))
+                }
+            }
         }
         var descriptor = FetchDescriptor<Article>(
             predicate: predicate,
@@ -71,7 +107,7 @@ struct ArticleListView: View {
         }
         .overlay {
             if articles.isEmpty {
-                ContentUnavailableView(emptyTitle, systemImage: "tray")
+                ContentUnavailableView(emptyTitle, systemImage: isSearching ? "magnifyingglass" : "tray")
             }
         }
     }
@@ -118,19 +154,20 @@ struct ArticleListView: View {
     }
 
     private var emptyTitle: String {
+        if isSearching { return String(localized: "Aucun résultat") }
         switch filter {
-        case .unread: "Tout est lu"
-        case .starred: "Aucun favori"
-        default: "Aucun article"
+        case .unread: return String(localized: "Tout est lu")
+        case .starred: return String(localized: "Aucun favori")
+        default: return String(localized: "Aucun article")
         }
     }
 
     @ViewBuilder
     private func menu(for article: Article) -> some View {
-        Button(article.isRead ? "Marquer comme non lu" : "Marquer comme lu") {
+        Button(article.isRead ? String(localized: "Marquer comme non lu") : String(localized: "Marquer comme lu")) {
             article.isRead.toggle()
         }
-        Button(article.isStarred ? "Retirer des favoris" : "Ajouter aux favoris") {
+        Button(article.isStarred ? String(localized: "Retirer des favoris") : String(localized: "Ajouter aux favoris")) {
             article.isStarred.toggle()
         }
         if let link = article.link, let url = URL(string: link) {
@@ -162,7 +199,7 @@ struct ArticleRow: View {
                     if article.isStarred {
                         Image(systemName: "star.fill").foregroundStyle(.yellow)
                     }
-                    Text(article.published.formatted(.relative(presentation: .named).locale(.fr)))
+                    Text(article.published.formatted(.relative(presentation: .named).locale(.app)))
                         .lineLimit(1)
                 }
                 .font(.caption)

@@ -146,7 +146,7 @@ final class FeedStore {
             let article = Article(
                 key: key,
                 feedURL: feed.url,
-                title: title.isEmpty ? "(Sans titre)" : title,
+                title: title.isEmpty ? String(localized: "(Sans titre)") : title,
                 link: link,
                 summary: summary,
                 contentHTML: html,

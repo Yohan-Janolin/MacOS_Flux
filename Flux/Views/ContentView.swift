@@ -9,6 +9,7 @@ struct ContentView: View {
     @State private var selectedKey: String?
     @State private var showAddFeed = false
     @State private var showNewFolder = false
+    @State private var searchText = ""
     @AppStorage(Prefs.refreshMinutes) private var refreshMinutes = 30
 
     /// Observé pour que la liste se mette à jour quand on déplace un flux de dossier
@@ -39,8 +40,14 @@ struct ContentView: View {
         NavigationSplitView {
             SidebarView(selection: $filter, showNewFolder: $showNewFolder)
         } content: {
-            ArticleListView(filter: filter ?? .all, selection: $selectedKey, folderFeedURLs: folderFeedURLs)
-                .navigationSplitViewColumnWidth(min: 320, ideal: 400)
+            ArticleListView(
+                filter: filter ?? .all,
+                selection: $selectedKey,
+                folderFeedURLs: folderFeedURLs,
+                searchText: searchText.trimmingCharacters(in: .whitespaces)
+            )
+            .navigationSplitViewColumnWidth(min: 320, ideal: 400)
+            .searchable(text: $searchText, placement: .toolbar, prompt: Text("Rechercher"))
         } detail: {
             if let article = selectedArticle {
                 ArticleDetailView(article: article)
@@ -87,6 +94,13 @@ struct ContentView: View {
                 }
                 .keyboardShortcut("k", modifiers: [.command, .shift])
                 .help("Tout marquer comme lu (⇧⌘K)")
+            }
+
+            ToolbarItem(placement: .primaryAction) {
+                SettingsLink {
+                    Label("Réglages", systemImage: "gearshape")
+                }
+                .help("Réglages (⌘,)")
             }
         }
         .sheet(isPresented: $showAddFeed) {

@@ -5,7 +5,7 @@ options:
   deploymentTarget:
     macOS: "14.0"
   createIntermediateGroups: true
-  developmentLanguage: fr
+  developmentLanguage: en
 
 settings:
   base:
@@ -27,8 +27,9 @@ targets:
       path: Support/Info.plist
       properties:
         CFBundleDisplayName: Flux
-        CFBundleDevelopmentRegion: fr
-        CFBundleLocalizations: [fr]
+        # Anglais par défaut (langues autres que le français) ; textes sources en français
+        CFBundleDevelopmentRegion: en
+        CFBundleLocalizations: [en, fr]
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         LSApplicationCategoryType: public.app-category.news

@@ -8,8 +8,29 @@ struct SettingsView: View {
     @AppStorage(Prefs.refreshMinutes) private var refreshMinutes = 30
     @AppStorage(Prefs.retentionDays) private var retentionDays = 60
 
+    @State private var language = AppLanguage.current
+    @State private var languageChanged = false
+
     var body: some View {
         Form {
+            Section {
+                Picker("Langue", selection: $language) {
+                    Text("Langue du système").tag(AppLanguage.system)
+                    Text(verbatim: "Français").tag("fr")
+                    Text(verbatim: "English").tag("en")
+                }
+                if languageChanged {
+                    HStack {
+                        Text("La nouvelle langue s'appliquera au prochain lancement.")
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        Button("Relancer Flux") { AppLanguage.relaunch() }
+                    }
+                }
+            } header: {
+                Text("Général")
+            }
+
             Section {
                 Toggle("Marquer automatiquement comme lus les anciens articles", isOn: $autoMarkReadEnabled)
                 Picker("Articles publiés il y a plus de", selection: $autoMarkReadDays) {
@@ -57,6 +78,10 @@ struct SettingsView: View {
         .formStyle(.grouped)
         .frame(width: 520)
         .fixedSize(horizontal: false, vertical: true)
+        .onChange(of: language) {
+            AppLanguage.set(language)
+            languageChanged = true
+        }
         .onChange(of: autoMarkReadEnabled) { store.applyAutoMarkRead() }
         .onChange(of: autoMarkReadDays) { store.applyAutoMarkRead() }
     }

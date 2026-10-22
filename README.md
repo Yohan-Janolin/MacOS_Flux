@@ -46,10 +46,16 @@ dans /Applications.
   l'icône (SF Symbols).
 - **Actualisation** : au lancement, à intervalle régulier (30 minutes par
   défaut), et avec ⌘R.
-- **Réglages** (⌘,) : marquer automatiquement comme lus les articles de plus de
+- **Réglages** (⌘, ou bouton ⚙ de la barre d'outils) : marquer automatiquement comme lus les articles de plus de
   X jours (hors favoris), intervalle d'actualisation, durée de conservation des
   articles lus (2 mois par défaut ; non lus et favoris toujours conservés).
 - **Données** : `~/Library/Application Support/Flux/Flux.store` (SwiftData).
+
+- **Recherche** (champ de la barre d'outils) : dans le titre et le résumé des articles de la vue
+  courante (tous les articles, un dossier, un flux…).
+- **Langues** : interface en français et en anglais, selon la langue de macOS ;
+  forçable dans Réglages › Général › Langue. Les traductions anglaises sont dans
+  `Flux/en.lproj/Localizable.strings` (les clés sont les textes français).
 
 ## Raccourcis
 
@@ -83,6 +89,5 @@ Design/                    source de l'icône (script Python + PNG 1024 px)
 ## Pistes pour la suite
 
 - Import/export OPML
-- Recherche dans les articles
 - Raccourcis clavier façon Reeder (j/k, espace pour défiler, m pour lu/non lu)
 - Réglage de la taille du texte de lecture

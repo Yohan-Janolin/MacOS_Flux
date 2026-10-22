@@ -28,7 +28,7 @@ struct AddFeedSheet: View {
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
-            TextField("https://exemple.com/feed.xml", text: $address)
+            TextField("https://exemple.fr/feed.xml", text: $address)
                 .textFieldStyle(.roundedBorder)
                 .onSubmit { if canSubmit { add() } }
                 .disabled(working)

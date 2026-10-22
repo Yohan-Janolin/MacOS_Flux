@@ -8,10 +8,10 @@ enum FeedError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .invalidURL: "Adresse invalide."
-        case .notAFeed: "Aucun flux RSS ou Atom trouvé à cette adresse."
-        case .alreadyExists: "Ce flux est déjà dans ta liste."
-        case .http(let code): "Le serveur a répondu avec l'erreur \(code)."
+        case .invalidURL: String(localized: "Adresse invalide.")
+        case .notAFeed: String(localized: "Aucun flux RSS ou Atom trouvé à cette adresse.")
+        case .alreadyExists: String(localized: "Ce flux est déjà dans ta liste.")
+        case .http(let code): String(localized: "Le serveur a répondu avec l'erreur \(code).")
         }
     }
 }

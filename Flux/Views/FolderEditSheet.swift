@@ -113,6 +113,6 @@ struct FolderEditSheet: View {
                 }
         }
         .buttonStyle(.plain)
-        .help(value == nil ? "Couleur d'accent du système" : value!)
+        .help(value.flatMap(FolderColor.init(rawValue:))?.label ?? String(localized: "Couleur d'accent du système"))
     }
 }

@@ -48,10 +48,10 @@ struct ArticleDetailView: View {
                     Button {
                         toggleFull()
                     } label: {
-                        Label(showFull ? "Version du flux" : "Article complet",
+                        Label(showFull ? String(localized: "Version du flux") : String(localized: "Article complet"),
                               systemImage: showFull ? "doc.plaintext" : "doc.richtext")
                     }
-                    .help(showFull ? "Afficher le contenu fourni par le flux" : "Récupérer l'article complet depuis le site")
+                    .help(showFull ? String(localized: "Afficher le contenu fourni par le flux") : String(localized: "Récupérer l'article complet depuis le site"))
                     .disabled(articleURL == nil || loading)
 
                     Button {
@@ -59,7 +59,7 @@ struct ArticleDetailView: View {
                     } label: {
                         Label("Favori", systemImage: article.isStarred ? "star.fill" : "star")
                     }
-                    .help(article.isStarred ? "Retirer des favoris" : "Ajouter aux favoris")
+                    .help(article.isStarred ? String(localized: "Retirer des favoris") : String(localized: "Ajouter aux favoris"))
 
                     if let url = articleURL {
                         ShareLink(item: url)
@@ -112,11 +112,11 @@ struct ArticleDetailView: View {
                 }
                 showFull = true
             } else {
-                errorMessage = "Impossible d'extraire le contenu de cette page."
+                errorMessage = String(localized: "Impossible d'extraire le contenu de cette page.")
             }
         } catch {
             guard !Task.isCancelled else { return }
-            errorMessage = "Échec du téléchargement : \(error.localizedDescription)"
+            errorMessage = String(localized: "Échec du téléchargement : \(error.localizedDescription)")
         }
     }
 }

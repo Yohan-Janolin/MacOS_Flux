@@ -61,6 +61,24 @@ enum FolderColor: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
+    var label: String {
+        switch self {
+        case .red: String(localized: "Rouge")
+        case .orange: String(localized: "Orange")
+        case .yellow: String(localized: "Jaune")
+        case .green: String(localized: "Vert")
+        case .mint: String(localized: "Menthe")
+        case .teal: String(localized: "Bleu canard")
+        case .cyan: String(localized: "Cyan")
+        case .blue: String(localized: "Bleu")
+        case .indigo: String(localized: "Indigo")
+        case .purple: String(localized: "Violet")
+        case .pink: String(localized: "Rose")
+        case .brown: String(localized: "Marron")
+        case .gray: String(localized: "Gris")
+        }
+    }
+
     var color: Color {
         switch self {
         case .red: .red
@@ -81,7 +99,10 @@ enum FolderColor: String, CaseIterable, Identifiable {
 }
 
 extension Locale {
-    static let fr = Locale(identifier: "fr_FR")
+    /// Langue de l'interface (celle que macOS a choisie pour l'app), pour formater les dates
+    static var app: Locale {
+        Locale(identifier: Bundle.main.preferredLocalizations.first ?? "en")
+    }
 }
 
 @Model

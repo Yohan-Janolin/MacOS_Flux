@@ -49,7 +49,7 @@ enum ReaderTemplate {
             .compactMap { $0 }
             .filter { !$0.isEmpty }
             .map(HTMLUtils.escape)
-        meta.append(article.published.formatted(Date.FormatStyle(date: .long, time: .shortened, locale: .fr)))
+        meta.append(article.published.formatted(Date.FormatStyle(date: .long, time: .shortened, locale: .app)))
 
         var hero = ""
         if let image = article.imageURL {
@@ -62,7 +62,7 @@ enum ReaderTemplate {
 
         return """
         <!doctype html>
-        <html lang="fr">
+        <html lang="\(Locale.app.language.languageCode?.identifier ?? "en")">
         <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
