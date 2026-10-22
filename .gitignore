@@ -60,3 +60,10 @@ fastlane/report.xml
 fastlane/Preview.html
 fastlane/screenshots/**/*.png
 fastlane/test_output
+
+# Fichiers générés par XcodeGen (`xcodegen generate`)
+Flux.xcodeproj/
+Support/Info.plist
+
+# macOS
+.DS_Store
