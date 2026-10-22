@@ -39,6 +39,8 @@ dans /Applications.
   permet de basculer manuellement.
 - **Lecture** : affichage dans un WKWebView avec JavaScript désactivé ; les liens
   s'ouvrent dans ton navigateur par défaut. Mode sombre pris en charge.
+- **Renommer un flux** : clic droit › Renommer… (le nom d'origine reste
+  disponible pour revenir en arrière).
 - **Dossiers** (⇧⌘N) : repliables, avec le total des non-lus. Range un flux en
   le glissant sur un dossier, ou via clic droit › Déplacer vers. Glisser un flux
   sur l'en-tête « Flux » le sort de son dossier. Supprimer un dossier ne supprime

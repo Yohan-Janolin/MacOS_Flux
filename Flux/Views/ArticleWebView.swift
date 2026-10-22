@@ -47,7 +47,7 @@ struct ArticleWebView: NSViewRepresentable {
 
 enum ReaderTemplate {
     static func render(_ article: Article, body: String) -> String {
-        var meta = [article.feed?.title, article.author]
+        var meta = [article.feed?.displayTitle, article.author]
             .compactMap { $0 }
             .filter { !$0.isEmpty }
             .map(HTMLUtils.escape)

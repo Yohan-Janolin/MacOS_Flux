@@ -11,6 +11,8 @@ final class Feed {
     var lastRefreshed: Date?
     var lastError: String?
     var folder: Folder?
+    /// Nom choisi par l'utilisateur (nil = nom fourni par le flux)
+    var customTitle: String?
 
     @Relationship(deleteRule: .cascade, inverse: \Article.feed)
     var articles: [Article] = []
@@ -21,6 +23,9 @@ final class Feed {
         self.siteURL = siteURL
         self.addedAt = .now
     }
+
+    /// Nom affiché partout dans l'app
+    var displayTitle: String { customTitle ?? title }
 
     var faviconURL: URL? {
         guard let host = URL(string: siteURL ?? url)?.host() else { return nil }

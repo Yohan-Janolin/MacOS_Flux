@@ -61,7 +61,7 @@ enum OPML {
                 .replacingOccurrences(of: "\"", with: "&quot;")
         }
         func line(_ feed: Feed, indent: String) -> String {
-            var attrs = "type=\"rss\" text=\"\(esc(feed.title))\" title=\"\(esc(feed.title))\" xmlUrl=\"\(esc(feed.url))\""
+            var attrs = "type=\"rss\" text=\"\(esc(feed.displayTitle))\" title=\"\(esc(feed.displayTitle))\" xmlUrl=\"\(esc(feed.url))\""
             if let site = feed.siteURL { attrs += " htmlUrl=\"\(esc(site))\"" }
             return "\(indent)<outline \(attrs)/>"
         }
@@ -70,12 +70,12 @@ enum OPML {
         let grouped = Dictionary(grouping: feeds.filter { $0.folder != nil }) { $0.folder!.name }
         for name in grouped.keys.sorted(by: { $0.localizedStandardCompare($1) == .orderedAscending }) {
             body.append("    <outline text=\"\(esc(name))\" title=\"\(esc(name))\">")
-            for feed in grouped[name]!.sorted(by: { $0.title.localizedStandardCompare($1.title) == .orderedAscending }) {
+            for feed in grouped[name]!.sorted(by: { $0.displayTitle.localizedStandardCompare($1.displayTitle) == .orderedAscending }) {
                 body.append(line(feed, indent: "      "))
             }
             body.append("    </outline>")
         }
-        for feed in feeds.filter({ $0.folder == nil }).sorted(by: { $0.title.localizedStandardCompare($1.title) == .orderedAscending }) {
+        for feed in feeds.filter({ $0.folder == nil }).sorted(by: { $0.displayTitle.localizedStandardCompare($1.displayTitle) == .orderedAscending }) {
             body.append(line(feed, indent: "    "))
         }
 

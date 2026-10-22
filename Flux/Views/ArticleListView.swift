@@ -351,7 +351,7 @@ struct ArticleRow: View {
                     if !article.isRead {
                         Circle().fill(.tint).frame(width: 7, height: 7)
                     }
-                    Text(article.feed?.title ?? "")
+                    Text(article.feed?.displayTitle ?? "")
                         .lineLimit(1)
                     Spacer(minLength: 4)
                     if article.isStarred {
@@ -458,7 +458,7 @@ struct ArticleCard: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
-        .help(article.feed?.title ?? "")
+        .help(article.feed?.displayTitle ?? "")
     }
 
     private var placeholder: some View {

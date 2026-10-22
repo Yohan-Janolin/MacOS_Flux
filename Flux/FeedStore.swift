@@ -122,6 +122,10 @@ final class FeedStore {
     /// Insère les nouveaux articles d'un flux, sans toucher à ceux déjà connus.
     private func ingest(_ parsed: ParsedFeed, into feed: Feed) -> [Article] {
         if feed.siteURL == nil, let site = parsed.siteURL { feed.siteURL = site }
+        // Le nom d'origine suit le flux ; un nom personnalisé (customTitle) reste prioritaire à l'affichage
+        if let fresh = parsed.title.map(HTMLUtils.plainText), !fresh.isEmpty, fresh != feed.title {
+            feed.title = fresh
+        }
         var known = Set(feed.articles.map(\.key))
         let base = URL(string: feed.siteURL ?? feed.url)
         // On n'importe pas les articles plus vieux que la durée de conservation
@@ -246,6 +250,13 @@ final class FeedStore {
     func articles(withKeys keys: Set<String>) -> [Article] {
         let list = Array(keys)
         return (try? context.fetch(FetchDescriptor<Article>(predicate: #Predicate { list.contains($0.key) }))) ?? []
+    }
+
+    /// Renomme un flux ; un nom vide rétablit le nom d'origine
+    func rename(_ feed: Feed, to name: String) {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        feed.customTitle = (trimmed.isEmpty || trimmed == feed.title) ? nil : trimmed
+        try? context.save()
     }
 
     func delete(_ feed: Feed) {

@@ -15,12 +15,18 @@ struct SidebarView: View {
     @Binding var showNewFolder: Bool
     @Environment(FeedStore.self) private var store
 
-    @Query(sort: \Feed.title) private var feeds: [Feed]
+    @Query private var allFeeds: [Feed]
+    /// Triés par nom affiché (le nom personnalisé s'il y en a un)
+    private var feeds: [Feed] {
+        allFeeds.sorted { $0.displayTitle.localizedStandardCompare($1.displayTitle) == .orderedAscending }
+    }
     @Query(sort: \Folder.name) private var folders: [Folder]
     @Query(filter: #Predicate<Article> { !$0.isRead }) private var unread: [Article]
 
     @State private var newFolderName = ""
     @State private var editingFolder: Folder?
+    @State private var renamingFeed: Feed?
+    @State private var feedName = ""
 
     var body: some View {
         let counts = Dictionary(grouping: unread, by: \.feedURL).mapValues(\.count)
@@ -71,6 +77,26 @@ struct SidebarView: View {
                 newFolderName = ""
             }
             Button("Annuler", role: .cancel) { newFolderName = "" }
+        }
+        .alert("Renommer le flux", isPresented: Binding(
+            get: { renamingFeed != nil },
+            set: { if !$0 { renamingFeed = nil } }
+        )) {
+            TextField("Nom du flux", text: $feedName)
+            Button("Renommer") {
+                if let feed = renamingFeed { store.rename(feed, to: feedName) }
+            }
+            .keyboardShortcut(.defaultAction)
+            if renamingFeed?.customTitle != nil {
+                Button("Nom d'origine") {
+                    if let feed = renamingFeed { store.rename(feed, to: "") }
+                }
+            }
+            Button("Annuler", role: .cancel) {}
+        } message: {
+            if let feed = renamingFeed {
+                Text("Nom d'origine : \(feed.title)")
+            }
         }
         .sheet(item: $editingFolder) { folder in
             FolderEditSheet(folder: folder)
@@ -131,6 +157,10 @@ struct SidebarView: View {
             .contextMenu {
                 Button("Tout marquer comme lu") { store.markAllRead(.feed(feed.url)) }
                 Button("Actualiser") { Task { await store.refresh(feed) } }
+                Button("Renommer…") {
+                    feedName = feed.displayTitle
+                    renamingFeed = feed
+                }
 
                 Menu("Déplacer vers") {
                     ForEach(folders) { folder in
@@ -165,7 +195,7 @@ struct FeedRow: View {
     var body: some View {
         Label {
             HStack(spacing: 4) {
-                Text(feed.title).lineLimit(1)
+                Text(feed.displayTitle).lineLimit(1)
                 if let error = feed.lastError {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .foregroundStyle(.orange)

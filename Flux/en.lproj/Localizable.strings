@@ -91,7 +91,10 @@
 "Marquer les articles comme lus" = "Mark articles as read";
 "Marron" = "Brown";
 "Menthe" = "Mint";
+"Nom d'origine : %@" = "Original name: %@";
+"Nom d'origine" = "Original Name";
 "Nom du dossier" = "Folder name";
+"Nom du flux" = "Feed name";
 "Non lus" = "Unread";
 "Nouveau dossier (⇧⌘N)" = "New Folder (⇧⌘N)";
 "Nouveau dossier" = "New Folder";
@@ -109,6 +112,9 @@
 "Relancer Flux maintenant ?" = "Relaunch Flux now?";
 "Relancer Flux" = "Relaunch Flux";
 "Relancer" = "Relaunch";
+"Renommer le flux" = "Rename Feed";
+"Renommer" = "Rename";
+"Renommer…" = "Rename…";
 "Retirer des favoris" = "Remove from Favorites";
 "Rose" = "Pink";
 "Rouge" = "Red";
