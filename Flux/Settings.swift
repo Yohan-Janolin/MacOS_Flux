@@ -12,6 +12,10 @@ enum Prefs {
     static let markReadDelay = "markReadDelay"
     /// Présentation de la liste d'articles : "list" ou "grid"
     static let articleLayout = "articleLayout"
+    /// Lecture hors ligne : télécharger articles complets et images des non lus et favoris
+    static let offlineEnabled = "offlineEnabled"
+    /// Taille maximale du cache d'images, en Mo
+    static let imageCacheLimitMB = "imageCacheLimitMB"
 
     static let defaults: [String: Any] = [
         autoMarkReadEnabled: false,
@@ -20,6 +24,8 @@ enum Prefs {
         retentionDays: 60,
         appearance: AppAppearance.system,
         markReadDelay: 0,
+        offlineEnabled: false,
+        imageCacheLimitMB: 1024,
     ]
 
     static func register() {
@@ -32,6 +38,12 @@ enum Prefs {
         guard d.bool(forKey: autoMarkReadEnabled) else { return nil }
         let days = max(d.integer(forKey: autoMarkReadDays), 1)
         return Date.now.addingTimeInterval(-Double(days) * 86_400)
+    }
+
+    static var offline: Bool { UserDefaults.standard.bool(forKey: offlineEnabled) }
+
+    static var imageCacheLimitBytes: Int64 {
+        Int64(max(UserDefaults.standard.integer(forKey: imageCacheLimitMB), 100)) << 20
     }
 
     /// Les articles lus (et non favoris) plus vieux que ça sont supprimés

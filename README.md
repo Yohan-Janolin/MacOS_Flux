@@ -52,6 +52,10 @@ dans /Applications.
   comme lu l'article ouvert (immédiatement, 5, 10 ou 30 secondes, jamais), marquer automatiquement comme lus les articles de plus de
   X jours (hors favoris), intervalle d'actualisation, durée de conservation des
   articles lus (2 mois par défaut ; non lus et favoris toujours conservés).
+- **Hors ligne** (Réglages › Hors ligne) : après chaque actualisation, les
+  articles non lus et les favoris sont téléchargés en entier, images comprises,
+  dans un cache plafonné (1 Go par défaut, images les moins récemment utilisées
+  supprimées en premier). Sans connexion, la barre d'outils affiche « Hors ligne ».
 - **Données** : `~/Library/Application Support/Flux/Flux.store` (SwiftData).
 
 - **Recherche** (champ de la barre d'outils) : dans le titre et le texte complet

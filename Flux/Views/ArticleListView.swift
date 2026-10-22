@@ -391,13 +391,7 @@ struct Thumbnail: View {
             .frame(width: width, height: height)
             .overlay {
                 if let url {
-                    AsyncImage(url: url, transaction: Transaction(animation: .easeIn(duration: 0.2))) { phase in
-                        if let image = phase.image {
-                            image.resizable().scaledToFill()
-                        } else {
-                            placeholder
-                        }
-                    }
+                    CachedImage(url: url) { placeholder }
                 } else {
                     placeholder
                 }
@@ -424,13 +418,7 @@ struct ArticleCard: View {
                 .aspectRatio(16 / 10, contentMode: .fit)
                 .overlay {
                     if let url = article.imageURL.flatMap({ URL(string: $0) }) {
-                        AsyncImage(url: url, transaction: Transaction(animation: .easeIn(duration: 0.2))) { phase in
-                            if let image = phase.image {
-                                image.resizable().scaledToFill()
-                            } else {
-                                placeholder
-                            }
-                        }
+                        CachedImage(url: url) { placeholder }
                     } else {
                         placeholder
                     }

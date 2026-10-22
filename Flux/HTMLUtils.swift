@@ -118,6 +118,50 @@ enum HTMLUtils {
         return URL(string: s, relativeTo: base)?.absoluteURL.absoluteString
     }
 
+    // MARK: - Images de la vue de lecture
+
+    private static let srcsetAttr = regex("\\s(srcset|sizes|data-srcset|loading)\\s*=\\s*(\"[^\"]*\"|'[^']*'|[^\\s>]+)")
+    private static let sourceTag = regex("<source\\b[^>]*>")
+    private static let srcAttr = regex("\\ssrc\\s*=\\s*(\"[^\"]*\"|'[^']*'|[^\\s>]+)")
+
+    /// URLs absolues des images d'un fragment HTML (src, ou data-src pour le chargement différé)
+    static func imageURLs(in html: String, base: URL?) -> [URL] {
+        matches(imgTag, in: html).compactMap { tag in
+            guard let src = attribute("src", in: tag) ?? attribute("data-src", in: tag),
+                  !src.lowercased().hasPrefix("data:"),
+                  let resolved = resolve(src, base: base) else { return nil }
+            return URL(string: resolved)
+        }
+    }
+
+    /// Fait passer les images par le cache disque (protocole flux-image://) :
+    /// src réécrit, srcset et <source> retirés (sinon WebKit irait les chercher en ligne).
+    static func rewriteImagesForCache(_ html: String, base: URL?) -> String {
+        var out = replace(sourceTag, in: html, with: "")
+        let ns = out as NSString
+        var result = ""
+        var last = 0
+        for m in imgTag.matches(in: out, range: NSRange(location: 0, length: ns.length)) {
+            result += ns.substring(with: NSRange(location: last, length: m.range.location - last))
+            var tag = ns.substring(with: m.range)
+            let src = attribute("src", in: tag) ?? attribute("data-src", in: tag)
+            if let src, !src.lowercased().hasPrefix("data:"),
+               let resolved = resolve(src, base: base), let url = URL(string: resolved) {
+                tag = replace(srcsetAttr, in: tag, with: "")
+                tag = replace(srcAttr, in: tag, with: "")
+                // On réinsère un src propre juste après "<img"
+                let proxy = escape(ImageCache.proxyURL(for: url))
+                tag = tag.replacingCharacters(in: tag.range(of: "<img", options: .caseInsensitive)!,
+                                              with: "<img src=\"\(proxy)\"")
+            }
+            result += tag
+            last = m.range.location + m.range.length
+        }
+        result += ns.substring(from: last)
+        out = result
+        return out
+    }
+
     // MARK: - Helpers regex
 
     static func attribute(_ name: String, in tag: String) -> String? {

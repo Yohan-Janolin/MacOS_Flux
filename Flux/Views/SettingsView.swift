@@ -9,6 +9,9 @@ struct SettingsView: View {
     @AppStorage(Prefs.retentionDays) private var retentionDays = 60
     @AppStorage(Prefs.appearance) private var appearance = AppAppearance.system
     @AppStorage(Prefs.markReadDelay) private var markReadDelay = 0
+    @AppStorage(Prefs.offlineEnabled) private var offlineEnabled = false
+    @AppStorage(Prefs.imageCacheLimitMB) private var imageCacheLimitMB = 1024
+    @State private var cacheSize: Int64?
 
     @State private var language = AppLanguage.current
     @State private var languageChanged = false
@@ -75,6 +78,45 @@ struct SettingsView: View {
             }
 
             Section {
+                Toggle("Préparer les articles pour la lecture hors ligne", isOn: $offlineEnabled)
+                Picker("Taille maximale du cache d'images", selection: $imageCacheLimitMB) {
+                    Text("250 Mo").tag(250)
+                    Text("500 Mo").tag(500)
+                    Text("1 Go").tag(1024)
+                    Text("2 Go").tag(2048)
+                    Text("5 Go").tag(5120)
+                }
+                HStack {
+                    Text("Images en cache")
+                    Spacer()
+                    if let cacheSize {
+                        Text(cacheSize.formatted(.byteCount(style: .file)))
+                            .foregroundStyle(.secondary)
+                            .monospacedDigit()
+                    }
+                    Button("Vider") {
+                        ImageCache.clear()
+                        Task { await updateCacheSize() }
+                    }
+                }
+                if let status = store.offlineStatus {
+                    HStack(spacing: 8) {
+                        ProgressView().controlSize(.small)
+                        Text(status).foregroundStyle(.secondary)
+                    }
+                } else if offlineEnabled {
+                    Button("Préparer maintenant") {
+                        Task { await store.prepareOffline() }
+                    }
+                }
+            } header: {
+                Text("Hors ligne")
+            } footer: {
+                Text("Après chaque actualisation, les articles non lus et les favoris sont téléchargés en entier, images comprises. Quand le cache est plein, les images les moins récemment utilisées sont supprimées.")
+                    .foregroundStyle(.secondary)
+            }
+
+            Section {
                 Picker("Supprimer les articles lus après", selection: $retentionDays) {
                     Text("2 semaines").tag(14)
                     Text("1 mois").tag(30)
@@ -108,7 +150,26 @@ struct SettingsView: View {
         } message: {
             Text("La nouvelle langue sera appliquée au redémarrage de l'app.")
         }
+        .task { await updateCacheSize() }
+        .onChange(of: offlineEnabled) {
+            if offlineEnabled { Task { await store.prepareOffline() } }
+        }
+        .onChange(of: imageCacheLimitMB) {
+            let limit = Prefs.imageCacheLimitBytes
+            Task {
+                await Task.detached { ImageCache.trim(toBytes: limit) }.value
+                await updateCacheSize()
+            }
+        }
+        .onChange(of: store.offlineStatus) {
+            // Préparation terminée : taille à jour
+            if store.offlineStatus == nil { Task { await updateCacheSize() } }
+        }
         .onChange(of: autoMarkReadEnabled) { store.applyAutoMarkRead() }
         .onChange(of: autoMarkReadDays) { store.applyAutoMarkRead() }
+    }
+
+    private func updateCacheSize() async {
+        cacheSize = await Task.detached { ImageCache.totalSize() }.value
     }
 }

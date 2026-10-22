@@ -146,6 +146,15 @@ struct ContentView: View {
                 .help("Présentation de la liste : liste ou vignettes")
             }
 
+            if store.isOffline {
+                ToolbarItem(placement: .primaryAction) {
+                    Label("Hors ligne", systemImage: "wifi.slash")
+                        .labelStyle(.titleAndIcon)
+                        .foregroundStyle(.secondary)
+                        .help("Pas de connexion : les articles préparés pour la lecture hors ligne restent lisibles.")
+                }
+            }
+
             ToolbarItem(placement: .primaryAction) {
                 SettingsLink {
                     Label("Réglages", systemImage: "gearshape")

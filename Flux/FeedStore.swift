@@ -6,6 +6,10 @@ import SwiftData
 @Observable
 final class FeedStore {
     private(set) var isRefreshing = false
+    /// Pas de connexion lors de la dernière actualisation
+    private(set) var isOffline = false
+    /// Progression de la préparation hors ligne (nil = rien en cours)
+    private(set) var offlineStatus: String?
     @ObservationIgnored let context: ModelContext
 
     init(context: ModelContext) {
@@ -75,6 +79,12 @@ final class FeedStore {
             return out
         }
 
+        // Hors ligne si toutes les requêtes ont échoué faute de connexion
+        let failures = results.values.compactMap { r -> Error? in
+            if case .failure(let e) = r { return e } else { return nil }
+        }
+        isOffline = !results.isEmpty && failures.count == results.count && failures.allSatisfy(Self.isOfflineError)
+
         var added: [Article] = []
         for feed in feeds {
             guard let result = results[feed.url] else { continue }
@@ -83,7 +93,20 @@ final class FeedStore {
         applyAutoMarkRead(save: false)
         prune()
         if context.hasChanges { try? context.save() }
+        guard !isOffline else { return }
         await fillMissingImages(added)
+        // En tâche séparée : l'actualisation (et son indicateur) se termine sans attendre
+        if Prefs.offline { Task { await prepareOffline() } }
+
+        // Le cache d'images se remplit aussi en lisant normalement : on le garde sous la limite
+        let limit = Prefs.imageCacheLimitBytes
+        Task.detached(priority: .background) { ImageCache.trim(toBytes: limit) }
+    }
+
+    nonisolated static func isOfflineError(_ error: Error) -> Bool {
+        guard let code = (error as? URLError)?.code else { return false }
+        return [.notConnectedToInternet, .networkConnectionLost, .dataNotAllowed,
+                .internationalRoamingOff, .timedOut].contains(code)
     }
 
     func refresh(_ feed: Feed) async {
@@ -113,6 +136,8 @@ final class FeedStore {
             feed.lastRefreshed = .now
             return ingest(parsed, into: feed)
         case .failure(let error):
+            // Pas de connexion : ce n'est pas la faute du flux, on ne le signale pas en erreur
+            if Self.isOfflineError(error) { return [] }
             let message = error.localizedDescription
             if feed.lastError != message { feed.lastError = message }
             return []
@@ -262,6 +287,78 @@ final class FeedStore {
     func delete(_ feed: Feed) {
         context.delete(feed)
         try? context.save()
+    }
+
+    // MARK: - Hors ligne
+
+    /// Prépare la lecture hors ligne des articles non lus et des favoris :
+    /// récupère l'article complet quand le flux ne donne qu'un extrait,
+    /// puis télécharge toutes leurs images dans le cache disque.
+    func prepareOffline() async {
+        guard offlineStatus == nil else { return }
+        offlineStatus = String(localized: "Préparation…")
+        defer { offlineStatus = nil }
+
+        var descriptor = FetchDescriptor<Article>(
+            predicate: #Predicate { !$0.isRead || $0.isStarred },
+            sortBy: [SortDescriptor(\.published, order: .reverse)]
+        )
+        descriptor.fetchLimit = 400
+        let articles = (try? context.fetch(descriptor)) ?? []
+
+        // 1. Articles complets (téléchargement 4 par 4, extraction une par une)
+        let needFull = articles.filter {
+            $0.fullHTML == nil && $0.link != nil && HTMLUtils.plainText($0.contentHTML ?? "").count < 700
+        }
+        var done = 0
+        for start in stride(from: 0, to: needFull.count, by: 4) {
+            guard Prefs.offline, !isOffline else { return }
+            let chunk = Array(needFull[start..<min(start + 4, needFull.count)])
+            let pages = await withTaskGroup(of: (String, String, URL)?.self) { group in
+                for article in chunk {
+                    guard let link = article.link, let url = URL(string: link) else { continue }
+                    let key = article.key
+                    group.addTask {
+                        guard let r = try? await Net.get(url) else { return nil }
+                        return (key, Net.decodeHTML(r.0), r.1)
+                    }
+                }
+                var out: [(String, String, URL)] = []
+                for await page in group { if let page { out.append(page) } }
+                return out
+            }
+            for (key, html, finalURL) in pages {
+                guard let article = chunk.first(where: { $0.key == key }), !article.isDeleted,
+                      article.fullHTML == nil,
+                      let content = (try? await ArticleExtractor.shared.extract(html: html, url: finalURL))?.content
+                else { continue }
+                article.fullHTML = content
+                article.updateSearchText()
+                if article.imageURL == nil, let first = HTMLUtils.imageURLs(in: content, base: finalURL).first {
+                    article.imageURL = first.absoluteString
+                }
+            }
+            done += chunk.count
+            offlineStatus = String(localized: "Articles : \(done) sur \(needFull.count)")
+            if context.hasChanges { try? context.save() }
+        }
+
+        // 2. Images (miniature + images du texte, 25 max par article)
+        var imageURLs: [URL] = []
+        var seen = Set<URL>()
+        for article in articles where !article.isDeleted {
+            let base = article.link.flatMap { URL(string: $0) }
+            var urls = HTMLUtils.imageURLs(in: article.fullHTML ?? article.contentHTML ?? "", base: base).prefix(25).map { $0 }
+            if let thumb = article.imageURL.flatMap({ URL(string: $0) }) { urls.insert(thumb, at: 0) }
+            for url in urls where seen.insert(url).inserted { imageURLs.append(url) }
+        }
+        let missing = imageURLs.filter { !ImageCache.isCached($0) }
+        for start in stride(from: 0, to: missing.count, by: 24) {
+            guard Prefs.offline, !isOffline else { return }
+            offlineStatus = String(localized: "Images : \(start) sur \(missing.count)")
+            await ImageCache.prefetch(Array(missing[start..<min(start + 24, missing.count)]))
+        }
+        ImageCache.trim(toBytes: Prefs.imageCacheLimitBytes)
     }
 
     // MARK: - OPML

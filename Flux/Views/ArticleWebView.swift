@@ -14,6 +14,8 @@ struct ArticleWebView: NSViewRepresentable {
     func makeNSView(context: Context) -> WKWebView {
         let config = WKWebViewConfiguration()
         config.defaultWebpagePreferences.allowsContentJavaScript = false
+        // Images servies depuis le cache disque (lecture hors ligne)
+        config.setURLSchemeHandler(context.coordinator.imageHandler, forURLScheme: ImageCache.scheme)
         let webView = WKWebView(frame: .zero, configuration: config)
         webView.navigationDelegate = context.coordinator
         webView.setValue(false, forKey: "drawsBackground")
@@ -30,6 +32,7 @@ struct ArticleWebView: NSViewRepresentable {
     @MainActor
     final class Coordinator: NSObject, WKNavigationDelegate {
         var lastHTML: String?
+        let imageHandler = CachedImageSchemeHandler()
 
         func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction) async -> WKNavigationActionPolicy {
             guard navigationAction.navigationType == .linkActivated,
@@ -54,13 +57,15 @@ enum ReaderTemplate {
         meta.append(article.published.formatted(Date.FormatStyle(date: .long, time: .shortened, locale: .app)))
 
         var hero = ""
-        if let image = article.imageURL {
-            let fileName = URL(string: image)?.lastPathComponent ?? image
+        if let image = article.imageURL, let imageURL = URL(string: image) {
+            let fileName = imageURL.lastPathComponent
             let alreadyInBody = fileName.count > 4 && body.contains(fileName)
             if !alreadyInBody {
-                hero = "<img class=\"hero\" src=\"\(HTMLUtils.escape(image))\" alt=\"\">"
+                hero = "<img class=\"hero\" src=\"\(HTMLUtils.escape(ImageCache.proxyURL(for: imageURL)))\" alt=\"\">"
             }
         }
+        // Toutes les images passent par le cache disque (disponibles hors ligne)
+        let body = HTMLUtils.rewriteImagesForCache(body, base: article.link.flatMap { URL(string: $0) })
 
         return """
         <!doctype html>
