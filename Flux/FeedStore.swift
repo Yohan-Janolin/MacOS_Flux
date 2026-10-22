@@ -83,14 +83,14 @@ final class FeedStore {
             added += apply(result, to: feed)
         }
         prune()
-        try? context.save()
+        if context.hasChanges { try? context.save() }
         await fillMissingImages(added)
     }
 
     func refresh(_ feed: Feed) async {
         let result = await Self.fetchFeed(feed.url)
         let added = apply(result, to: feed)
-        try? context.save()
+        if context.hasChanges { try? context.save() }
         await fillMissingImages(added)
     }
 
@@ -109,18 +109,20 @@ final class FeedStore {
         guard !feed.isDeleted, feed.modelContext != nil else { return [] }
         switch result {
         case .success(let parsed):
-            feed.lastError = nil
+            // On n'écrit que ce qui change, pour ne pas réveiller les vues inutilement
+            if feed.lastError != nil { feed.lastError = nil }
             feed.lastRefreshed = .now
             return ingest(parsed, into: feed)
         case .failure(let error):
-            feed.lastError = error.localizedDescription
+            let message = error.localizedDescription
+            if feed.lastError != message { feed.lastError = message }
             return []
         }
     }
 
     /// Insère les nouveaux articles d'un flux, sans toucher à ceux déjà connus.
     private func ingest(_ parsed: ParsedFeed, into feed: Feed) -> [Article] {
-        if feed.siteURL == nil { feed.siteURL = parsed.siteURL }
+        if feed.siteURL == nil, let site = parsed.siteURL { feed.siteURL = site }
         var known = Set(feed.articles.map(\.key))
         let base = URL(string: feed.siteURL ?? feed.url)
         let cutoff = Date.now.addingTimeInterval(-retention)

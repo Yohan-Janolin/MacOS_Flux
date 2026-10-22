@@ -33,7 +33,8 @@ struct ArticleListView: View {
             sortBy: [SortDescriptor(\.published, order: .reverse)]
         )
         descriptor.fetchLimit = 1000
-        _articles = Query(descriptor, animation: .default)
+        // Pas d'animation : une mise à jour animée pendant le défilement fait sauter la liste
+        _articles = Query(descriptor)
     }
 
     var body: some View {
@@ -103,17 +104,18 @@ struct ArticleRow: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
+                // Hauteur réservée même si le texte est plus court : toutes les lignes
+                // de la liste ont la même hauteur, ce qui évite que la liste « tremble »
+                // quand macOS corrige la hauteur estimée des lignes pas encore affichées.
                 Text(article.title)
                     .font(.system(size: 14, weight: article.isRead ? .regular : .semibold))
                     .foregroundStyle(article.isRead ? .secondary : .primary)
-                    .lineLimit(3)
+                    .lineLimit(2, reservesSpace: true)
 
-                if !article.summary.isEmpty {
-                    Text(article.summary)
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(2)
-                }
+                Text(article.summary)
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2, reservesSpace: true)
             }
         }
         .padding(.vertical, 6)
