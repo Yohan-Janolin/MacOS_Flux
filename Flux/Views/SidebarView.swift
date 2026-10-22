@@ -38,7 +38,7 @@ struct SidebarView: View {
 
             Section {
                 if feeds.isEmpty && folders.isEmpty {
-                    Text("Ajoute un flux avec le bouton +")
+                    Text("Ajoute un flux avec le bouton +, ou importe tes abonnements depuis le menu Fichier.")
                         .font(.callout)
                         .foregroundStyle(.secondary)
                 }

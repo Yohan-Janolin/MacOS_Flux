@@ -1,5 +1,6 @@
 /* Interface de Flux en anglais. Clés = textes sources (français). */
 
+"%lld flux importés, %lld ignorés (déjà présents ou invalides)." = "%lld feeds imported, %lld skipped (already present or invalid).";
 "(Mozilla, Apache 2.0)" = "(Mozilla, Apache 2.0)";
 "(Sans titre)" = "(Untitled)";
 "1 an" = "1 year";
@@ -18,7 +19,7 @@
 "Actualiser" = "Refresh";
 "Adresse invalide." = "Invalid address.";
 "Afficher le contenu fourni par le flux" = "Show the content provided by the feed";
-"Ajoute un flux avec le bouton +" = "Add a feed with the + button";
+"Ajoute un flux avec le bouton +, ou importe tes abonnements depuis le menu Fichier." = "Add a feed with the + button, or import your subscriptions from the File menu.";
 "Ajouter aux favoris" = "Add to Favorites";
 "Ajouter un flux (⌘N)" = "Add Feed (⌘N)";
 "Ajouter un flux" = "Add Feed";
@@ -27,6 +28,7 @@
 "Apparence" = "Appearance";
 "Article complet" = "Full Article";
 "Articles publiés il y a plus de" = "Articles published more than";
+"Aucun abonnement trouvé dans ce fichier." = "No subscriptions found in this file.";
 "Aucun article sélectionné" = "No Article Selected";
 "Aucun article" = "No Articles";
 "Aucun favori" = "No Favorites";
@@ -50,6 +52,7 @@
 "Dossier" = "Folder";
 "Déplacer vers" = "Move To";
 "Enregistrer" = "Save";
+"Exporter les abonnements (OPML)…" = "Export Subscriptions (OPML)…";
 "Extraction des articles :" = "Article extraction:";
 "Favori" = "Favorite";
 "Favoris" = "Favorites";
@@ -58,7 +61,10 @@
 "Général" = "General";
 "Hors dossier" = "No Folder";
 "Icône" = "Icon";
+"Import OPML" = "OPML Import";
+"Importer des abonnements (OPML)…" = "Import Subscriptions (OPML)…";
 "Impossible d'extraire le contenu de cette page." = "Couldn't extract the content of this page.";
+"Impossible de lire ce fichier." = "Couldn't read this file.";
 "Indigo" = "Indigo";
 "Jaune" = "Yellow";
 "La nouvelle langue s'appliquera au prochain lancement." = "The new language will apply the next time Flux launches.";
@@ -77,6 +83,7 @@
 "Nouveau dossier (⇧⌘N)" = "New Folder (⇧⌘N)";
 "Nouveau dossier" = "New Folder";
 "Nouveau dossier…" = "New Folder…";
+"OK" = "OK";
 "Orange" = "Orange";
 "Ouvrir dans le navigateur" = "Open in Browser";
 "Ouvrir le site" = "Open Website";

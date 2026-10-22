@@ -61,6 +61,8 @@ final class FeedStore {
         isRefreshing = true
         defer { isRefreshing = false }
 
+        backfillSearchText()
+
         let feeds = (try? context.fetch(FetchDescriptor<Feed>())) ?? []
         let urls = feeds.map(\.url)
 
@@ -200,6 +202,16 @@ final class FeedStore {
         return HTMLUtils.ogImage(in: Net.decodeHTML(r.0)).flatMap { HTMLUtils.resolve($0, base: r.1) }
     }
 
+    /// Calcule le texte de recherche des articles enregistrés avant la recherche plein texte
+    /// (par lots, pour ne pas bloquer l'interface)
+    private func backfillSearchText() {
+        var descriptor = FetchDescriptor<Article>(predicate: #Predicate { $0.searchText == "" })
+        descriptor.fetchLimit = 500
+        for article in (try? context.fetch(descriptor)) ?? [] {
+            article.updateSearchText()
+        }
+    }
+
     // MARK: - Gestion
 
     func markAllRead(_ filter: SidebarSelection) {
@@ -224,6 +236,71 @@ final class FeedStore {
     func delete(_ feed: Feed) {
         context.delete(feed)
         try? context.save()
+    }
+
+    // MARK: - OPML
+
+    struct ImportResult {
+        var added = 0
+        var skipped = 0
+    }
+
+    /// Importe les abonnements d'un fichier OPML : crée les dossiers manquants,
+    /// ignore les flux déjà présents, puis actualise pour récupérer les articles.
+    func importOPML(_ data: Data) async -> ImportResult {
+        var result = ImportResult()
+        let entries = OPML.parse(data)
+        guard !entries.isEmpty else { return result }
+
+        let feeds = (try? context.fetch(FetchDescriptor<Feed>())) ?? []
+        var knownURLs = Set(feeds.map(\.url))
+        var foldersByName: [String: Folder] = [:]
+        for folder in (try? context.fetch(FetchDescriptor<Folder>())) ?? [] {
+            foldersByName[folder.name.lowercased()] = folder
+        }
+
+        for entry in entries {
+            guard let url = URL(string: entry.xmlURL), url.host() != nil else {
+                result.skipped += 1
+                continue
+            }
+            let key = url.absoluteString
+            guard !knownURLs.contains(key) else {
+                result.skipped += 1
+                continue
+            }
+            knownURLs.insert(key)
+
+            var folder: Folder?
+            if let name = entry.folder {
+                if let existing = foldersByName[name.lowercased()] {
+                    folder = existing
+                } else {
+                    let created = Folder(name: name)
+                    context.insert(created)
+                    foldersByName[name.lowercased()] = created
+                    folder = created
+                }
+            }
+
+            let title = entry.title.isEmpty ? (url.host() ?? key) : entry.title
+            let feed = Feed(url: key, title: title, siteURL: entry.htmlURL)
+            context.insert(feed)
+            feed.folder = folder
+            result.added += 1
+        }
+
+        try? context.save()
+        if result.added > 0 {
+            // Si une actualisation est déjà en cours, on attend sa fin pour inclure les nouveaux flux
+            while isRefreshing { try? await Task.sleep(for: .milliseconds(300)) }
+            await refreshAll()
+        }
+        return result
+    }
+
+    func exportOPML() -> String {
+        OPML.export(feeds: (try? context.fetch(FetchDescriptor<Feed>())) ?? [])
     }
 
     // MARK: - Dossiers

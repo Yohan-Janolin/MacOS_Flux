@@ -1,15 +1,19 @@
+import UniformTypeIdentifiers
 import SwiftData
 import SwiftUI
 
 struct ContentView: View {
     @Environment(FeedStore.self) private var store
     @Environment(\.modelContext) private var context
+    @Environment(UIState.self) private var ui
+    @Environment(KeyboardRouter.self) private var keyboard
 
     @State private var filter: SidebarSelection? = .all
     @State private var selectedKey: String?
     @State private var showAddFeed = false
     @State private var showNewFolder = false
     @State private var searchText = ""
+    @State private var importMessage: String?
     @AppStorage(Prefs.refreshMinutes) private var refreshMinutes = 30
 
     /// Observé pour que la liste se mette à jour quand on déplace un flux de dossier
@@ -103,6 +107,27 @@ struct ContentView: View {
                 .help("Réglages (⌘,)")
             }
         }
+        .fileImporter(
+            isPresented: Binding(get: { ui.showOPMLImport }, set: { ui.showOPMLImport = $0 }),
+            allowedContentTypes: [.opml, .xml]
+        ) { result in
+            guard case .success(let url) = result else { return }
+            Task { await importOPML(from: url) }
+        }
+        .fileExporter(
+            isPresented: Binding(get: { ui.showOPMLExport }, set: { ui.showOPMLExport = $0 }),
+            document: ui.showOPMLExport ? OPMLDocument(text: store.exportOPML()) : nil,
+            contentType: .opml,
+            defaultFilename: "Flux.opml"
+        ) { _ in }
+        .alert(
+            "Import OPML",
+            isPresented: Binding(get: { importMessage != nil }, set: { if !$0 { importMessage = nil } })
+        ) {
+            Button("OK") {}
+        } message: {
+            Text(importMessage ?? "")
+        }
         .sheet(isPresented: $showAddFeed) {
             AddFeedSheet(initialFolderUID: currentFolderUID)
         }
@@ -114,6 +139,8 @@ struct ContentView: View {
                 article.isRead = true
             }
         }
+        .background(WindowReader { keyboard.mainWindow = $0 })
+        .onAppear { keyboard.start() }
         .task {
             // Actualisation au lancement
             await store.refreshAll()
@@ -125,6 +152,21 @@ struct ContentView: View {
                 guard !Task.isCancelled else { break }
                 await store.refreshAll()
             }
+        }
+    }
+
+    private func importOPML(from url: URL) async {
+        let accessing = url.startAccessingSecurityScopedResource()
+        defer { if accessing { url.stopAccessingSecurityScopedResource() } }
+        guard let data = try? Data(contentsOf: url) else {
+            importMessage = String(localized: "Impossible de lire ce fichier.")
+            return
+        }
+        let result = await store.importOPML(data)
+        if result.added == 0 && result.skipped == 0 {
+            importMessage = String(localized: "Aucun abonnement trouvé dans ce fichier.")
+        } else {
+            importMessage = String(localized: "\(result.added) flux importés, \(result.skipped) ignorés (déjà présents ou invalides).")
         }
     }
 }

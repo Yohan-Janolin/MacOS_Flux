@@ -5,6 +5,8 @@ import SwiftUI
 struct FluxApp: App {
     private let container: ModelContainer
     @State private var store: FeedStore
+    @State private var ui = UIState()
+    @State private var keyboard = KeyboardRouter()
 
     init() {
         Prefs.register()
@@ -33,6 +35,8 @@ struct FluxApp: App {
         Window("Flux", id: "main") {
             ContentView()
                 .environment(store)
+                .environment(ui)
+                .environment(keyboard)
                 .frame(minWidth: 900, minHeight: 560)
         }
         .defaultSize(width: 1280, height: 820)
@@ -40,6 +44,13 @@ struct FluxApp: App {
         .commands {
             CommandGroup(replacing: .appInfo) {
                 AboutMenuItem()
+            }
+            CommandGroup(after: .newItem) {
+                Divider()
+                Button("Importer des abonnements (OPML)…") { ui.showOPMLImport = true }
+                    .keyboardShortcut("i", modifiers: [.command, .shift])
+                Button("Exporter les abonnements (OPML)…") { ui.showOPMLExport = true }
+                    .keyboardShortcut("e", modifiers: [.command, .shift])
             }
         }
 

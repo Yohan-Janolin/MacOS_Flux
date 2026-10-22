@@ -7,6 +7,7 @@ import WebKit
 struct ArticleWebView: NSViewRepresentable {
     let html: String
     let baseURL: URL?
+    @Environment(KeyboardRouter.self) private var keyboard
 
     func makeCoordinator() -> Coordinator { Coordinator() }
 
@@ -16,6 +17,7 @@ struct ArticleWebView: NSViewRepresentable {
         let webView = WKWebView(frame: .zero, configuration: config)
         webView.navigationDelegate = context.coordinator
         webView.setValue(false, forKey: "drawsBackground")
+        keyboard.readerWebView = webView   // pour faire défiler l'article à la touche espace
         return webView
     }
 

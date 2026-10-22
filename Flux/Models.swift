@@ -118,6 +118,9 @@ final class Article {
     var contentHTML: String?
     /// HTML extrait de la page web par Readability (mis en cache)
     var fullHTML: String?
+    /// Titre + résumé + contenu en texte brut, pour la recherche plein texte
+    /// ("" = pas encore calculé pour les articles importés avant cette version)
+    var searchText: String = ""
     var imageURL: String?
     var author: String?
     var published: Date
@@ -134,10 +137,26 @@ final class Article {
         self.summary = summary
         self.contentHTML = contentHTML
         self.fullHTML = nil
+        self.searchText = Article.makeSearchText(title: title, summary: summary, html: contentHTML)
         self.imageURL = imageURL
         self.author = author
         self.published = published
         self.isRead = false
         self.isStarred = false
+    }
+}
+
+extension Article {
+    /// Limite pour ne pas alourdir la base avec des articles très longs
+    private static let searchTextLimit = 30_000
+
+    static func makeSearchText(title: String, summary: String, html: String?) -> String {
+        let body = html.map(HTMLUtils.plainText) ?? ""
+        return String((title + "\n" + summary + "\n" + body).prefix(searchTextLimit))
+    }
+
+    /// À appeler quand le contenu change (article complet récupéré)
+    func updateSearchText() {
+        searchText = Article.makeSearchText(title: title, summary: summary, html: fullHTML ?? contentHTML)
     }
 }

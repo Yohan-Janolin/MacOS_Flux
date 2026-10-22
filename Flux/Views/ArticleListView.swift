@@ -10,7 +10,7 @@ struct ArticleListView: View {
     private let isSearching: Bool
 
     /// `folderFeedURLs` : adresses des flux du dossier quand `filter` est `.folder`
-    /// `searchText` : recherche dans le titre et le résumé (vide = pas de recherche)
+    /// `searchText` : recherche dans le titre et le texte complet (vide = pas de recherche)
     init(filter: SidebarSelection, selection: Binding<String?>, folderFeedURLs: [String] = [], searchText: String = "") {
         self.filter = filter
         self._selection = selection
@@ -36,31 +36,31 @@ struct ArticleListView: View {
                 predicate = #Predicate { urls.contains($0.feedURL) }
             }
         } else {
-            // Même filtres, restreints aux articles dont le titre ou le résumé contient la recherche
+            // Même filtres, restreints aux articles dont le titre ou le texte contient la recherche
             switch filter {
             case .all:
                 predicate = #Predicate {
-                    $0.title.localizedStandardContains(q) || $0.summary.localizedStandardContains(q)
+                    $0.title.localizedStandardContains(q) || $0.searchText.localizedStandardContains(q)
                 }
             case .unread:
                 predicate = #Predicate {
                     (!$0.isRead || $0.key == sticky)
-                        && ($0.title.localizedStandardContains(q) || $0.summary.localizedStandardContains(q))
+                        && ($0.title.localizedStandardContains(q) || $0.searchText.localizedStandardContains(q))
                 }
             case .starred:
                 predicate = #Predicate {
                     $0.isStarred
-                        && ($0.title.localizedStandardContains(q) || $0.summary.localizedStandardContains(q))
+                        && ($0.title.localizedStandardContains(q) || $0.searchText.localizedStandardContains(q))
                 }
             case .feed(let url):
                 predicate = #Predicate {
                     $0.feedURL == url
-                        && ($0.title.localizedStandardContains(q) || $0.summary.localizedStandardContains(q))
+                        && ($0.title.localizedStandardContains(q) || $0.searchText.localizedStandardContains(q))
                 }
             case .folder:
                 predicate = #Predicate {
                     urls.contains($0.feedURL)
-                        && ($0.title.localizedStandardContains(q) || $0.summary.localizedStandardContains(q))
+                        && ($0.title.localizedStandardContains(q) || $0.searchText.localizedStandardContains(q))
                 }
             }
         }
@@ -79,6 +79,7 @@ struct ArticleListView: View {
     static let rowHeight: CGFloat = 100
 
     @FocusState private var isFocused: Bool
+    @Environment(KeyboardRouter.self) private var keyboard
 
     // Une ScrollView + LazyVStack plutôt qu'une List : sur macOS, List estime la
     // hauteur des lignes jamais affichées avec une valeur par défaut, puis la
@@ -103,6 +104,9 @@ struct ArticleListView: View {
             .onKeyPress(.upArrow) {
                 moveSelection(by: -1, proxy: proxy)
                 return .handled
+            }
+            .onChange(of: keyboard.event) { _, event in
+                if let event { perform(event.command, proxy: proxy) }
             }
         }
         .overlay {
@@ -137,6 +141,38 @@ struct ArticleListView: View {
             }
             .contextMenu { menu(for: article) }
             .id(article.key)
+    }
+
+    /// Raccourcis façon Reeder (voir KeyboardRouter)
+    private func perform(_ command: KeyCommand, proxy: ScrollViewProxy) {
+        let current = articles.first { $0.key == selection }
+        switch command {
+        case .next:
+            moveSelection(by: 1, proxy: proxy)
+        case .previous:
+            moveSelection(by: -1, proxy: proxy)
+        case .pageDown:
+            guard current != nil else {
+                moveSelection(by: 1, proxy: proxy)
+                return
+            }
+            Task {
+                // Une fois en bas de l'article, espace passe au suivant
+                if await keyboard.scrollReader(down: true) {
+                    moveSelection(by: 1, proxy: proxy)
+                }
+            }
+        case .pageUp:
+            Task { _ = await keyboard.scrollReader(down: false) }
+        case .toggleRead:
+            current?.isRead.toggle()
+        case .toggleStar:
+            current?.isStarred.toggle()
+        case .openInBrowser:
+            if let link = current?.link, let url = URL(string: link) {
+                NSWorkspace.shared.open(url)
+            }
+        }
     }
 
     /// Flèches ↑ / ↓ : article précédent / suivant

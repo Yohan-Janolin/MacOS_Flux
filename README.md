@@ -51,8 +51,11 @@ dans /Applications.
   articles lus (2 mois par défaut ; non lus et favoris toujours conservés).
 - **Données** : `~/Library/Application Support/Flux/Flux.store` (SwiftData).
 
-- **Recherche** (champ de la barre d'outils) : dans le titre et le résumé des articles de la vue
-  courante (tous les articles, un dossier, un flux…).
+- **Recherche** (champ de la barre d'outils) : dans le titre et le texte complet
+  des articles de la vue courante (tous les articles, un dossier, un flux…).
+- **OPML** : Fichier › Importer des abonnements (⇧⌘I) reprend tes flux et leurs
+  dossiers depuis un autre lecteur (NetNewsWire, Reeder, Feedly…) ; Fichier ›
+  Exporter (⇧⌘E) les sauvegarde.
 - **Apparence** : clair ou sombre selon macOS, ou forcé dans Réglages ›
   Général › Apparence (la vue de lecture suit aussi).
 - **Langues** : interface en français et en anglais, selon la langue de macOS ;
@@ -69,6 +72,12 @@ dans /Applications.
 | ⇧⌘K | Tout marquer comme lu (dans la vue courante) |
 | ⌘, | Réglages |
 | ↑ / ↓ | Naviguer dans la liste |
+| j / k | Article suivant / précédent |
+| espace / ⇧ espace | Faire défiler l'article (en bas : article suivant) |
+| m | Marquer comme lu / non lu |
+| s | Ajouter aux / retirer des favoris |
+| b | Ouvrir dans le navigateur |
+| ⇧⌘I / ⇧⌘E | Importer / exporter les abonnements (OPML) |
 
 ## Structure
 
@@ -90,6 +99,4 @@ Design/                    source de l'icône (script Python + PNG 1024 px)
 
 ## Pistes pour la suite
 
-- Import/export OPML
-- Raccourcis clavier façon Reeder (j/k, espace pour défiler, m pour lu/non lu)
 - Réglage de la taille du texte de lecture

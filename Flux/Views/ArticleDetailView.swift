@@ -107,6 +107,7 @@ struct ArticleDetailView: View {
             guard !Task.isCancelled else { return }
             if let content {
                 article.fullHTML = content
+                article.updateSearchText()
                 if article.imageURL == nil {
                     article.imageURL = HTMLUtils.firstImage(in: content)
                 }
