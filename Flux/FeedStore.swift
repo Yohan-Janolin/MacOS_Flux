@@ -487,6 +487,13 @@ final class FeedStore {
         if save, context.hasChanges { try? context.save() }
     }
 
+    /// Nombre d'articles non lus (hors favoris) publiés il y a plus de `days` jours
+    func unreadCount(olderThanDays days: Int) -> Int {
+        let cutoff = Date.now.addingTimeInterval(-Double(max(days, 1)) * 86_400)
+        let predicate = #Predicate<Article> { !$0.isRead && !$0.isStarred && $0.published < cutoff }
+        return (try? context.fetchCount(FetchDescriptor(predicate: predicate))) ?? 0
+    }
+
     private func prune() {
         let cutoff = Prefs.retentionCutoff
         let predicate = #Predicate<Article> { $0.isRead && !$0.isStarred && $0.published < cutoff }

@@ -13,6 +13,15 @@ struct SettingsView: View {
     @AppStorage(Prefs.imageCacheLimitMB) private var imageCacheLimitMB = 1024
     @State private var cacheSize: Int64?
 
+    // « Marquer comme lus les anciens articles » : brouillon, enregistré avec le bouton Appliquer
+    @State private var draftAutoRead = false
+    @State private var draftAutoReadDays = 7
+    @State private var affectedCount = 0
+
+    private var autoReadIsApplied: Bool {
+        autoMarkReadEnabled && draftAutoRead && draftAutoReadDays == autoMarkReadDays
+    }
+
     @State private var language = AppLanguage.current
     @State private var languageChanged = false
     @State private var askRelaunch = false
@@ -50,8 +59,8 @@ struct SettingsView: View {
                     Text("Après 30 secondes").tag(30)
                     Text("Jamais").tag(-1)
                 }
-                Toggle("Marquer automatiquement comme lus les anciens articles", isOn: $autoMarkReadEnabled)
-                Picker("Articles publiés il y a plus de", selection: $autoMarkReadDays) {
+                Toggle("Marquer automatiquement comme lus les anciens articles", isOn: $draftAutoRead)
+                Picker("Articles publiés il y a plus de", selection: $draftAutoReadDays) {
                     Text("1 jour").tag(1)
                     Text("2 jours").tag(2)
                     Text("3 jours").tag(3)
@@ -59,7 +68,26 @@ struct SettingsView: View {
                     Text("2 semaines").tag(14)
                     Text("1 mois").tag(30)
                 }
-                .disabled(!autoMarkReadEnabled)
+                .disabled(!draftAutoRead)
+                HStack {
+                    if draftAutoRead && !autoReadIsApplied {
+                        Text(affectedCount == 0
+                             ? String(localized: "Aucun article non lu concerné pour l'instant.")
+                             : String(localized: "\(affectedCount) articles non lus seront marqués comme lus."))
+                            .foregroundStyle(.secondary)
+                    } else if autoReadIsApplied {
+                        Label("Appliqué", systemImage: "checkmark.circle.fill")
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                    Button("Appliquer") {
+                        autoMarkReadDays = draftAutoReadDays
+                        autoMarkReadEnabled = true
+                        store.applyAutoMarkRead()
+                        updateAffectedCount()
+                    }
+                    .disabled(!draftAutoRead || autoReadIsApplied)
+                }
             } header: {
                 Text("Lecture")
             } footer: {
@@ -165,11 +193,24 @@ struct SettingsView: View {
             // Préparation terminée : taille à jour
             if store.offlineStatus == nil { Task { await updateCacheSize() } }
         }
-        .onChange(of: autoMarkReadEnabled) { store.applyAutoMarkRead() }
-        .onChange(of: autoMarkReadDays) { store.applyAutoMarkRead() }
+        .onAppear {
+            draftAutoRead = autoMarkReadEnabled
+            draftAutoReadDays = autoMarkReadDays
+            updateAffectedCount()
+        }
+        .onChange(of: draftAutoRead) {
+            // Désactiver est sans risque : pris en compte tout de suite
+            if !draftAutoRead { autoMarkReadEnabled = false }
+            updateAffectedCount()
+        }
+        .onChange(of: draftAutoReadDays) { updateAffectedCount() }
     }
 
     private func updateCacheSize() async {
         cacheSize = await Task.detached { ImageCache.totalSize() }.value
+    }
+
+    private func updateAffectedCount() {
+        affectedCount = store.unreadCount(olderThanDays: draftAutoReadDays)
     }
 }

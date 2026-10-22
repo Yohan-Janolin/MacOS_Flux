@@ -1,5 +1,6 @@
 /* Interface de Flux en anglais. Clés = textes sources (français). */
 
+"%lld articles non lus seront marqués comme lus." = "%lld unread articles will be marked as read.";
 "%lld articles sélectionnés" = "%lld articles selected";
 "%lld flux importés, %lld ignorés (déjà présents ou invalides)." = "%lld feeds imported, %lld skipped (already present or invalid).";
 "(Mozilla, Apache 2.0)" = "(Mozilla, Apache 2.0)";
@@ -32,6 +33,8 @@
 "Ajouter" = "Add";
 "Annuler" = "Cancel";
 "Apparence" = "Appearance";
+"Appliquer" = "Apply";
+"Appliqué" = "Applied";
 "Après 10 secondes" = "After 10 seconds";
 "Après 30 secondes" = "After 30 seconds";
 "Après 5 secondes" = "After 5 seconds";
@@ -40,6 +43,7 @@
 "Articles : %lld sur %lld" = "Articles: %lld of %lld";
 "Articles publiés il y a plus de" = "Articles published more than";
 "Aucun abonnement trouvé dans ce fichier." = "No subscriptions found in this file.";
+"Aucun article non lu concerné pour l'instant." = "No unread articles affected for now.";
 "Aucun article sélectionné" = "No Article Selected";
 "Aucun article" = "No Articles";
 "Aucun favori" = "No Favorites";
