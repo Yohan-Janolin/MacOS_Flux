@@ -54,6 +54,8 @@ dans /Applications.
 
 - **Recherche** (champ de la barre d'outils) : dans le titre et le texte complet
   des articles de la vue courante (tous les articles, un dossier, un flux…).
+- **Présentation** : liste détaillée ou vignettes (image + titre), au choix dans
+  la barre d'outils. En vignettes, les flèches se déplacent dans la grille.
 - **Sélection multiple** : ⌘-clic, ⇧-clic, ⇧↑/↓ ou ⌘A. Les boutons « Marquer la
   sélection comme lue / non lue » de la barre d'outils, le menu contextuel et les
   touches m / s s'appliquent à toute la sélection.

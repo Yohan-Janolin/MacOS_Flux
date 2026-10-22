@@ -19,6 +19,7 @@ struct ContentView: View {
 
     /// Largeur de la liste d'articles, mémorisée d'un lancement à l'autre
     @AppStorage("articleListWidth") private var listWidth: Double = 400
+    @AppStorage(Prefs.articleLayout) private var articleLayout = "list"
     static let listWidthRange: ClosedRange<Double> = 300...700
     @AppStorage(Prefs.refreshMinutes) private var refreshMinutes = 30
 
@@ -133,6 +134,16 @@ struct ContentView: View {
                 }
                 .disabled(selectedKeys.isEmpty)
                 .help("Marquer la sélection comme non lue")
+            }
+
+            ToolbarItem(placement: .navigation) {
+                Picker("Présentation", selection: $articleLayout) {
+                    Label("Liste", systemImage: "list.bullet").tag("list")
+                    Label("Vignettes", systemImage: "square.grid.2x2").tag("grid")
+                }
+                .pickerStyle(.segmented)
+                .labelStyle(.iconOnly)
+                .help("Présentation de la liste : liste ou vignettes")
             }
 
             ToolbarItem(placement: .primaryAction) {

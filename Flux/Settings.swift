@@ -10,6 +10,8 @@ enum Prefs {
     static let appearance = "appearance"
     /// Délai avant de marquer comme lu l'article ouvert, en secondes (0 = immédiatement, -1 = jamais)
     static let markReadDelay = "markReadDelay"
+    /// Présentation de la liste d'articles : "list" ou "grid"
+    static let articleLayout = "articleLayout"
 
     static let defaults: [String: Any] = [
         autoMarkReadEnabled: false,

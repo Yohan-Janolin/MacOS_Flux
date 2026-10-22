@@ -85,6 +85,21 @@ struct ArticleListView: View {
     static let rowHeight: CGFloat = 100
 
     @FocusState private var isFocused: Bool
+    @AppStorage(Prefs.articleLayout) private var layout = "list"
+    @State private var availableWidth: CGFloat = 400
+
+    private var isGrid: Bool { layout == "grid" }
+
+    // Vignettes : largeur minimale d'une carte et espacements
+    private static let cardMinWidth: CGFloat = 150
+    private static let gridSpacing: CGFloat = 12
+    private static let gridPadding: CGFloat = 12
+
+    /// Nombre de colonnes en mode vignettes, selon la largeur de la liste
+    private var columnCount: Int {
+        let usable = availableWidth - 2 * Self.gridPadding + Self.gridSpacing
+        return max(1, Int(usable / (Self.cardMinWidth + Self.gridSpacing)))
+    }
     @Environment(KeyboardRouter.self) private var keyboard
     @Environment(FeedStore.self) private var store
 
@@ -104,21 +119,52 @@ struct ArticleListView: View {
     var body: some View {
         ScrollViewReader { proxy in
             ScrollView {
-                LazyVStack(spacing: 0) {
-                    ForEach(articles) { article in
-                        row(for: article)
+                if isGrid {
+                    // Toutes les cartes ont la même taille : la hauteur totale reste stable
+                    LazyVGrid(
+                        columns: Array(repeating: GridItem(.flexible(), spacing: Self.gridSpacing), count: columnCount),
+                        spacing: Self.gridSpacing
+                    ) {
+                        ForEach(articles) { article in
+                            card(for: article)
+                        }
                     }
+                    .padding(Self.gridPadding)
+                } else {
+                    LazyVStack(spacing: 0) {
+                        ForEach(articles) { article in
+                            row(for: article)
+                        }
+                    }
+                    .padding(.vertical, 6)
                 }
-                .padding(.vertical, 6)
+            }
+            .background {
+                GeometryReader { geo in
+                    Color.clear
+                        .onAppear { availableWidth = geo.size.width }
+                        .onChange(of: geo.size.width) { _, width in availableWidth = width }
+                }
             }
             .focusable()
             .focused($isFocused)
             .focusEffectDisabled()
             .onKeyPress(.downArrow, phases: [.down, .repeat]) { press in
-                moveSelection(by: 1, extend: press.modifiers.contains(.shift), proxy: proxy)
+                // En vignettes, ↓ descend d'une rangée
+                moveSelection(by: isGrid ? columnCount : 1, extend: press.modifiers.contains(.shift), proxy: proxy)
                 return .handled
             }
             .onKeyPress(.upArrow, phases: [.down, .repeat]) { press in
+                moveSelection(by: isGrid ? -columnCount : -1, extend: press.modifiers.contains(.shift), proxy: proxy)
+                return .handled
+            }
+            .onKeyPress(.rightArrow, phases: [.down, .repeat]) { press in
+                guard isGrid else { return .ignored }
+                moveSelection(by: 1, extend: press.modifiers.contains(.shift), proxy: proxy)
+                return .handled
+            }
+            .onKeyPress(.leftArrow, phases: [.down, .repeat]) { press in
+                guard isGrid else { return .ignored }
                 moveSelection(by: -1, extend: press.modifiers.contains(.shift), proxy: proxy)
                 return .handled
             }
@@ -151,6 +197,20 @@ struct ArticleListView: View {
                 }
             }
             .padding(.horizontal, 8)
+            .contentShape(Rectangle())
+            .onTapGesture { click(article) }
+            .contextMenu { menu(for: article) }
+            .id(article.key)
+    }
+
+    private func card(for article: Article) -> some View {
+        let isSelected = selection.contains(article.key)
+        return ArticleCard(article: article)
+            .padding(6)
+            .background {
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(isSelected ? Color.accentColor.opacity(isFocused ? 0.22 : 0.12) : .clear)
+            }
             .contentShape(Rectangle())
             .onTapGesture { click(article) }
             .contextMenu { menu(for: article) }
@@ -351,3 +411,60 @@ struct Thumbnail: View {
             .foregroundStyle(.tertiary)
     }
 }
+
+/// Carte du mode vignettes : l'image, et le titre dessous
+struct ArticleCard: View {
+    let article: Article
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 7) {
+            // Cadre au format 16:10 fixé avant l'image, qui est recadrée dedans
+            RoundedRectangle(cornerRadius: 9, style: .continuous)
+                .fill(.quaternary)
+                .aspectRatio(16 / 10, contentMode: .fit)
+                .overlay {
+                    if let url = article.imageURL.flatMap({ URL(string: $0) }) {
+                        AsyncImage(url: url, transaction: Transaction(animation: .easeIn(duration: 0.2))) { phase in
+                            if let image = phase.image {
+                                image.resizable().scaledToFill()
+                            } else {
+                                placeholder
+                            }
+                        }
+                    } else {
+                        placeholder
+                    }
+                }
+                .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
+                .overlay(alignment: .topTrailing) {
+                    if article.isStarred {
+                        Image(systemName: "star.fill")
+                            .font(.caption)
+                            .foregroundStyle(.yellow)
+                            .padding(5)
+                            .background(.ultraThinMaterial, in: Circle())
+                            .padding(6)
+                    }
+                }
+
+            HStack(alignment: .firstTextBaseline, spacing: 5) {
+                if !article.isRead {
+                    Circle().fill(.tint).frame(width: 7, height: 7)
+                }
+                Text(article.title)
+                    .font(.system(size: 13, weight: article.isRead ? .regular : .semibold))
+                    .foregroundStyle(article.isRead ? .secondary : .primary)
+                    .lineLimit(3, reservesSpace: true)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+        .help(article.feed?.title ?? "")
+    }
+
+    private var placeholder: some View {
+        Image(systemName: "newspaper")
+            .font(.title2)
+            .foregroundStyle(.tertiary)
+    }
+}
+

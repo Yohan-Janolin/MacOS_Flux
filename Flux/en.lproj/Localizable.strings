@@ -80,6 +80,7 @@
 "Le serveur a répondu avec l'erreur %lld." = "The server responded with error %lld.";
 "Lecture" = "Reading";
 "Les articles non lus et les favoris sont toujours conservés." = "Unread articles and favorites are always kept.";
+"Liste" = "List";
 "Marquer automatiquement comme lus les anciens articles" = "Automatically mark old articles as read";
 "Marquer comme lu" = "Mark as Read";
 "Marquer comme lus" = "Mark as Read";
@@ -101,6 +102,8 @@
 "Ouvrir le site" = "Open Website";
 "Personnaliser…" = "Customize…";
 "Plus tard" = "Later";
+"Présentation de la liste : liste ou vignettes" = "Article list layout: list or thumbnails";
+"Présentation" = "View";
 "Readability.js" = "Readability.js";
 "Rechercher" = "Search";
 "Relancer Flux maintenant ?" = "Relaunch Flux now?";
@@ -132,6 +135,7 @@
 "Version %@ (%@)" = "Version %@ (%@)";
 "Version du flux" = "Feed Version";
 "Vert" = "Green";
+"Vignettes" = "Thumbnails";
 "Violet" = "Purple";
 "https://exemple.fr/feed.xml" = "https://example.com/feed.xml";
 "À propos de Flux" = "About Flux";
