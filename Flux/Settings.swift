@@ -8,6 +8,8 @@ enum Prefs {
     static let refreshMinutes = "refreshMinutes"
     static let retentionDays = "retentionDays"
     static let appearance = "appearance"
+    /// Délai avant de marquer comme lu l'article ouvert, en secondes (0 = immédiatement, -1 = jamais)
+    static let markReadDelay = "markReadDelay"
 
     static let defaults: [String: Any] = [
         autoMarkReadEnabled: false,
@@ -15,6 +17,7 @@ enum Prefs {
         refreshMinutes: 30,
         retentionDays: 60,
         appearance: AppAppearance.system,
+        markReadDelay: 0,
     ]
 
     static func register() {

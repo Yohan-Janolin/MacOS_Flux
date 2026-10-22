@@ -8,6 +8,7 @@ struct SettingsView: View {
     @AppStorage(Prefs.refreshMinutes) private var refreshMinutes = 30
     @AppStorage(Prefs.retentionDays) private var retentionDays = 60
     @AppStorage(Prefs.appearance) private var appearance = AppAppearance.system
+    @AppStorage(Prefs.markReadDelay) private var markReadDelay = 0
 
     @State private var language = AppLanguage.current
     @State private var languageChanged = false
@@ -39,6 +40,13 @@ struct SettingsView: View {
             }
 
             Section {
+                Picker("Marquer les articles comme lus", selection: $markReadDelay) {
+                    Text("Immédiatement").tag(0)
+                    Text("Après 5 secondes").tag(5)
+                    Text("Après 10 secondes").tag(10)
+                    Text("Après 30 secondes").tag(30)
+                    Text("Jamais").tag(-1)
+                }
                 Toggle("Marquer automatiquement comme lus les anciens articles", isOn: $autoMarkReadEnabled)
                 Picker("Articles publiés il y a plus de", selection: $autoMarkReadDays) {
                     Text("1 jour").tag(1)

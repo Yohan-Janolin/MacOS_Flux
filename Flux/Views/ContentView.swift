@@ -169,10 +169,17 @@ struct ContentView: View {
         .onChange(of: filter) {
             selectedKeys = []
         }
-        .onChange(of: selectedKeys) {
-            if let article = selectedArticle, !article.isRead {
-                article.isRead = true
+        .task(id: selectedKeys.count == 1 ? selectedKeys.first : nil) {
+            // Marque comme lu l'article ouvert, selon le réglage (immédiatement, après un délai, ou jamais).
+            // Changer d'article annule la tâche : un article survolé quelques secondes reste non lu.
+            guard let article = selectedArticle, !article.isRead else { return }
+            let delay = UserDefaults.standard.integer(forKey: Prefs.markReadDelay)
+            guard delay >= 0 else { return }
+            if delay > 0 {
+                try? await Task.sleep(for: .seconds(delay))
+                guard !Task.isCancelled else { return }
             }
+            article.isRead = true
         }
         .background(WindowReader { keyboard.mainWindow = $0 })
         .onAppear { keyboard.start() }

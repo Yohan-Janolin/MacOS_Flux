@@ -46,7 +46,8 @@ dans /Applications.
   l'icône (SF Symbols).
 - **Actualisation** : au lancement, à intervalle régulier (30 minutes par
   défaut), et avec ⌘R.
-- **Réglages** (⌘, ou bouton ⚙ de la barre d'outils) : marquer automatiquement comme lus les articles de plus de
+- **Réglages** (⌘, ou bouton ⚙ de la barre d'outils) : délai avant de marquer
+  comme lu l'article ouvert (immédiatement, 5, 10 ou 30 secondes, jamais), marquer automatiquement comme lus les articles de plus de
   X jours (hors favoris), intervalle d'actualisation, durée de conservation des
   articles lus (2 mois par défaut ; non lus et favoris toujours conservés).
 - **Données** : `~/Library/Application Support/Flux/Flux.store` (SwiftData).

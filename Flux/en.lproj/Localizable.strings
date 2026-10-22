@@ -27,6 +27,9 @@
 "Ajouter" = "Add";
 "Annuler" = "Cancel";
 "Apparence" = "Appearance";
+"Après 10 secondes" = "After 10 seconds";
+"Après 30 secondes" = "After 30 seconds";
+"Après 5 secondes" = "After 5 seconds";
 "Article complet" = "Full Article";
 "Articles publiés il y a plus de" = "Articles published more than";
 "Aucun abonnement trouvé dans ce fichier." = "No subscriptions found in this file.";
@@ -62,11 +65,13 @@
 "Général" = "General";
 "Hors dossier" = "No Folder";
 "Icône" = "Icon";
+"Immédiatement" = "Immediately";
 "Import OPML" = "OPML Import";
 "Importer des abonnements (OPML)…" = "Import Subscriptions (OPML)…";
 "Impossible d'extraire le contenu de cette page." = "Couldn't extract the content of this page.";
 "Impossible de lire ce fichier." = "Couldn't read this file.";
 "Indigo" = "Indigo";
+"Jamais" = "Never";
 "Jaune" = "Yellow";
 "La nouvelle langue s'appliquera au prochain lancement." = "The new language will apply the next time Flux launches.";
 "La nouvelle langue sera appliquée au redémarrage de l'app." = "The new language will be applied when the app restarts.";
@@ -82,6 +87,7 @@
 "Marquer comme non lus" = "Mark as Unread";
 "Marquer la sélection comme lue" = "Mark Selection as Read";
 "Marquer la sélection comme non lue" = "Mark Selection as Unread";
+"Marquer les articles comme lus" = "Mark articles as read";
 "Marron" = "Brown";
 "Menthe" = "Mint";
 "Nom du dossier" = "Folder name";
