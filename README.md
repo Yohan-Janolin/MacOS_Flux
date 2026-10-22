@@ -53,6 +53,8 @@ dans /Applications.
 
 - **Recherche** (champ de la barre d'outils) : dans le titre et le résumé des articles de la vue
   courante (tous les articles, un dossier, un flux…).
+- **Apparence** : clair ou sombre selon macOS, ou forcé dans Réglages ›
+  Général › Apparence (la vue de lecture suit aussi).
 - **Langues** : interface en français et en anglais, selon la langue de macOS ;
   forçable dans Réglages › Général › Langue. Les traductions anglaises sont dans
   `Flux/en.lproj/Localizable.strings` (les clés sont les textes français).

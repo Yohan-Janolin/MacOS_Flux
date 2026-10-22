@@ -8,6 +8,7 @@ struct FluxApp: App {
 
     init() {
         Prefs.register()
+        AppAppearance.apply()
 
         // Cache disque généreux pour les miniatures (AsyncImage passe par URLCache.shared)
         URLCache.shared = URLCache(memoryCapacity: 64 << 20, diskCapacity: 512 << 20)

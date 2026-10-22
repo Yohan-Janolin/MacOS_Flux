@@ -7,12 +7,14 @@ enum Prefs {
     static let autoMarkReadDays = "autoMarkReadDays"
     static let refreshMinutes = "refreshMinutes"
     static let retentionDays = "retentionDays"
+    static let appearance = "appearance"
 
     static let defaults: [String: Any] = [
         autoMarkReadEnabled: false,
         autoMarkReadDays: 7,
         refreshMinutes: 30,
         retentionDays: 60,
+        appearance: AppAppearance.system,
     ]
 
     static func register() {
@@ -31,6 +33,25 @@ enum Prefs {
     static var retentionCutoff: Date {
         let days = max(UserDefaults.standard.integer(forKey: retentionDays), 7)
         return Date.now.addingTimeInterval(-Double(days) * 86_400)
+    }
+}
+
+/// Apparence de l'app : celle de macOS, ou forcée en clair / sombre.
+/// Appliquée à toute l'app (fenêtres, réglages et vue de lecture, dont le CSS
+/// suit `prefers-color-scheme`).
+enum AppAppearance {
+    static let system = "system"
+    static let light = "light"
+    static let dark = "dark"
+
+    @MainActor
+    static func apply(_ value: String? = nil) {
+        let v = value ?? UserDefaults.standard.string(forKey: Prefs.appearance) ?? system
+        switch v {
+        case light: NSApplication.shared.appearance = NSAppearance(named: .aqua)
+        case dark: NSApplication.shared.appearance = NSAppearance(named: .darkAqua)
+        default: NSApplication.shared.appearance = nil   // suit macOS
+        }
     }
 }
 

@@ -7,6 +7,7 @@ struct SettingsView: View {
     @AppStorage(Prefs.autoMarkReadDays) private var autoMarkReadDays = 7
     @AppStorage(Prefs.refreshMinutes) private var refreshMinutes = 30
     @AppStorage(Prefs.retentionDays) private var retentionDays = 60
+    @AppStorage(Prefs.appearance) private var appearance = AppAppearance.system
 
     @State private var language = AppLanguage.current
     @State private var languageChanged = false
@@ -14,6 +15,11 @@ struct SettingsView: View {
     var body: some View {
         Form {
             Section {
+                Picker("Apparence", selection: $appearance) {
+                    Text("Automatique").tag(AppAppearance.system)
+                    Text("Clair").tag(AppAppearance.light)
+                    Text("Sombre").tag(AppAppearance.dark)
+                }
                 Picker("Langue", selection: $language) {
                     Text("Langue du système").tag(AppLanguage.system)
                     Text(verbatim: "Français").tag("fr")
@@ -78,6 +84,9 @@ struct SettingsView: View {
         .formStyle(.grouped)
         .frame(width: 520)
         .fixedSize(horizontal: false, vertical: true)
+        .onChange(of: appearance) {
+            AppAppearance.apply(appearance)
+        }
         .onChange(of: language) {
             AppLanguage.set(language)
             languageChanged = true
