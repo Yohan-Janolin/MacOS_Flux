@@ -1,0 +1,38 @@
+import SwiftData
+import SwiftUI
+
+@main
+struct FluxApp: App {
+    private let container: ModelContainer
+    @State private var store: FeedStore
+
+    init() {
+        // Cache disque généreux pour les miniatures (AsyncImage passe par URLCache.shared)
+        URLCache.shared = URLCache(memoryCapacity: 64 << 20, diskCapacity: 512 << 20)
+
+        // Base dans ~/Library/Application Support/Flux/ (l'app n'est pas sandboxée,
+        // on évite le "default.store" partagé avec d'autres apps)
+        let directory = URL.applicationSupportDirectory.appending(path: "Flux", directoryHint: .isDirectory)
+        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let configuration = ModelConfiguration(url: directory.appending(path: "Flux.store"))
+
+        let modelContainer: ModelContainer
+        do {
+            modelContainer = try ModelContainer(for: Feed.self, Article.self, configurations: configuration)
+        } catch {
+            fatalError("Impossible d'ouvrir la base : \(error)")
+        }
+        container = modelContainer
+        _store = State(initialValue: FeedStore(context: modelContainer.mainContext))
+    }
+
+    var body: some Scene {
+        Window("Flux", id: "main") {
+            ContentView()
+                .environment(store)
+                .frame(minWidth: 900, minHeight: 560)
+        }
+        .defaultSize(width: 1280, height: 820)
+        .modelContainer(container)
+    }
+}

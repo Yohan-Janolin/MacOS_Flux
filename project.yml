@@ -1,0 +1,45 @@
+# Projet XcodeGen : `xcodegen generate` crée Flux.xcodeproj
+name: Flux
+options:
+  bundleIdPrefix: io.github.aervorn
+  deploymentTarget:
+    macOS: "14.0"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "0.1"
+    CURRENT_PROJECT_VERSION: "1"
+
+targets:
+  Flux:
+    type: application
+    platform: macOS
+    sources:
+      - path: Flux
+        excludes:
+          - "Resources/**"
+      - path: Flux/Resources
+        buildPhase: resources
+    info:
+      path: Support/Info.plist
+      properties:
+        CFBundleDisplayName: Flux
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        LSApplicationCategoryType: public.app-category.news
+        LSMinimumSystemVersion: "$(MACOSX_DEPLOYMENT_TARGET)"
+        # Beaucoup de flux et d'images sont encore servis en http://
+        NSAppTransportSecurity:
+          NSAllowsArbitraryLoads: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: io.github.aervorn.flux
+        PRODUCT_NAME: Flux
+        # Signature locale ("Sign to Run Locally") : pas besoin de compte développeur
+        CODE_SIGN_IDENTITY: "-"
+        CODE_SIGN_STYLE: Manual
+        DEVELOPMENT_TEAM: ""
+        ENABLE_HARDENED_RUNTIME: NO
+        ENABLE_APP_SANDBOX: NO
