@@ -4,20 +4,26 @@ import SwiftUI
 
 struct ArticleListView: View {
     @Query private var articles: [Article]
-    @Binding var selection: String?
+    /// Clés des articles sélectionnés (sélection multiple)
+    @Binding var selection: Set<String>
     private let filter: SidebarSelection
 
     private let isSearching: Bool
 
+    /// Point de départ d'une sélection étendue (⇧-clic, ⇧↑/↓)
+    @State private var anchor: String?
+    /// Dernier article atteint au clavier ou à la souris
+    @State private var cursor: String?
+
     /// `folderFeedURLs` : adresses des flux du dossier quand `filter` est `.folder`
     /// `searchText` : recherche dans le titre et le texte complet (vide = pas de recherche)
-    init(filter: SidebarSelection, selection: Binding<String?>, folderFeedURLs: [String] = [], searchText: String = "") {
+    init(filter: SidebarSelection, selection: Binding<Set<String>>, folderFeedURLs: [String] = [], searchText: String = "") {
         self.filter = filter
         self._selection = selection
         self.isSearching = !searchText.isEmpty
 
-        // L'article sélectionné reste visible dans "Non lus" même une fois marqué comme lu
-        let sticky = selection.wrappedValue ?? ""
+        // Les articles sélectionnés restent visibles dans "Non lus" même une fois marqués comme lus
+        let sticky = Array(selection.wrappedValue)
         let urls = folderFeedURLs
         let q = searchText
         let predicate: Predicate<Article>?
@@ -27,7 +33,7 @@ struct ArticleListView: View {
             case .all:
                 predicate = nil
             case .unread:
-                predicate = #Predicate { !$0.isRead || $0.key == sticky }
+                predicate = #Predicate { !$0.isRead || sticky.contains($0.key) }
             case .starred:
                 predicate = #Predicate { $0.isStarred }
             case .feed(let url):
@@ -44,7 +50,7 @@ struct ArticleListView: View {
                 }
             case .unread:
                 predicate = #Predicate {
-                    (!$0.isRead || $0.key == sticky)
+                    (!$0.isRead || sticky.contains($0.key))
                         && ($0.title.localizedStandardContains(q) || $0.searchText.localizedStandardContains(q))
                 }
             case .starred:
@@ -80,6 +86,17 @@ struct ArticleListView: View {
 
     @FocusState private var isFocused: Bool
     @Environment(KeyboardRouter.self) private var keyboard
+    @Environment(FeedStore.self) private var store
+
+    /// Article seul sélectionné (nil si aucun ou plusieurs)
+    private var single: Article? {
+        guard selection.count == 1, let key = selection.first else { return nil }
+        return articles.first { $0.key == key }
+    }
+
+    private var selectedArticles: [Article] {
+        articles.filter { selection.contains($0.key) }
+    }
 
     // Une ScrollView + LazyVStack plutôt qu'une List : sur macOS, List estime la
     // hauteur des lignes jamais affichées avec une valeur par défaut, puis la
@@ -97,12 +114,12 @@ struct ArticleListView: View {
             .focusable()
             .focused($isFocused)
             .focusEffectDisabled()
-            .onKeyPress(.downArrow) {
-                moveSelection(by: 1, proxy: proxy)
+            .onKeyPress(.downArrow) { press in
+                moveSelection(by: 1, extend: press.modifiers.contains(.shift), proxy: proxy)
                 return .handled
             }
-            .onKeyPress(.upArrow) {
-                moveSelection(by: -1, proxy: proxy)
+            .onKeyPress(.upArrow) { press in
+                moveSelection(by: -1, extend: press.modifiers.contains(.shift), proxy: proxy)
                 return .handled
             }
             .onChange(of: keyboard.event) { _, event in
@@ -117,7 +134,7 @@ struct ArticleListView: View {
     }
 
     private func row(for article: Article) -> some View {
-        let isSelected = selection == article.key
+        let isSelected = selection.contains(article.key)
         return ArticleRow(article: article)
             .padding(.horizontal, 10)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -135,25 +152,72 @@ struct ArticleListView: View {
             }
             .padding(.horizontal, 8)
             .contentShape(Rectangle())
-            .onTapGesture {
-                selection = article.key
-                isFocused = true
-            }
+            .onTapGesture { click(article) }
             .contextMenu { menu(for: article) }
             .id(article.key)
     }
 
+    // MARK: - Sélection
+
+    /// Clic : sélection simple ; ⌘-clic : ajoute / retire ; ⇧-clic : plage depuis l'ancre
+    private func click(_ article: Article) {
+        let key = article.key
+        let modifiers = NSEvent.modifierFlags
+        if modifiers.contains(.shift), let anchor, let range = indexRange(anchor, key) {
+            selection = Set(articles[range].map(\.key))
+        } else if modifiers.contains(.command) {
+            if selection.contains(key) { selection.remove(key) } else { selection.insert(key) }
+            anchor = key
+        } else {
+            selection = [key]
+            anchor = key
+        }
+        cursor = key
+        isFocused = true
+    }
+
+    private func indexRange(_ a: String, _ b: String) -> ClosedRange<Int>? {
+        guard let i = articles.firstIndex(where: { $0.key == a }),
+              let j = articles.firstIndex(where: { $0.key == b }) else { return nil }
+        return min(i, j)...max(i, j)
+    }
+
+    /// ↑ / ↓ (et j / k) : article précédent / suivant ; avec ⇧, étend la sélection
+    private func moveSelection(by delta: Int, extend: Bool = false, proxy: ScrollViewProxy) {
+        guard !articles.isEmpty else { return }
+        let from = cursor.flatMap { c in articles.firstIndex { $0.key == c } }
+            ?? articles.firstIndex { selection.contains($0.key) }
+        let next = from.map { min(max($0 + delta, 0), articles.count - 1) } ?? 0
+        let key = articles[next].key
+
+        if extend, let anchor, let range = indexRange(anchor, key) {
+            selection = Set(articles[range].map(\.key))
+        } else {
+            selection = [key]
+            anchor = key
+        }
+        cursor = key
+        proxy.scrollTo(key)   // sans ancre : défile juste assez pour rendre la ligne visible
+    }
+
+    private func selectAll() {
+        selection = Set(articles.map(\.key))
+        anchor = articles.first?.key
+        cursor = articles.last?.key
+    }
+
+    // MARK: - Raccourcis
+
     /// Raccourcis façon Reeder (voir KeyboardRouter)
     private func perform(_ command: KeyCommand, proxy: ScrollViewProxy) {
-        let current = articles.first { $0.key == selection }
         switch command {
         case .next:
             moveSelection(by: 1, proxy: proxy)
         case .previous:
             moveSelection(by: -1, proxy: proxy)
         case .pageDown:
-            guard current != nil else {
-                moveSelection(by: 1, proxy: proxy)
+            guard single != nil else {
+                if selection.isEmpty { moveSelection(by: 1, proxy: proxy) }
                 return
             }
             Task {
@@ -165,28 +229,19 @@ struct ArticleListView: View {
         case .pageUp:
             Task { _ = await keyboard.scrollReader(down: false) }
         case .toggleRead:
-            current?.isRead.toggle()
+            // Si tout est lu, on repasse en non lu ; sinon tout devient lu
+            let targets = selectedArticles
+            store.setRead(!targets.allSatisfy(\.isRead), targets)
         case .toggleStar:
-            current?.isStarred.toggle()
+            let targets = selectedArticles
+            store.setStarred(!targets.allSatisfy(\.isStarred), targets)
         case .openInBrowser:
-            if let link = current?.link, let url = URL(string: link) {
+            if let link = single?.link, let url = URL(string: link) {
                 NSWorkspace.shared.open(url)
             }
+        case .selectAll:
+            selectAll()
         }
-    }
-
-    /// Flèches ↑ / ↓ : article précédent / suivant
-    private func moveSelection(by delta: Int, proxy: ScrollViewProxy) {
-        guard !articles.isEmpty else { return }
-        let next: Int
-        if let current = articles.firstIndex(where: { $0.key == selection }) {
-            next = min(max(current + delta, 0), articles.count - 1)
-        } else {
-            next = 0
-        }
-        let key = articles[next].key
-        selection = key
-        proxy.scrollTo(key)   // sans ancre : défile juste assez pour rendre la ligne visible
     }
 
     private var emptyTitle: String {
@@ -198,15 +253,22 @@ struct ArticleListView: View {
         }
     }
 
+    // MARK: - Menu contextuel
+
+    /// S'applique à toute la sélection si on fait un clic droit sur un article sélectionné
     @ViewBuilder
     private func menu(for article: Article) -> some View {
-        Button(article.isRead ? String(localized: "Marquer comme non lu") : String(localized: "Marquer comme lu")) {
-            article.isRead.toggle()
+        let targets = selection.contains(article.key) ? selectedArticles : [article]
+        let allRead = targets.allSatisfy(\.isRead)
+        let allStarred = targets.allSatisfy(\.isStarred)
+
+        Button(allRead ? String(localized: "Marquer comme non lu") : String(localized: "Marquer comme lu")) {
+            store.setRead(!allRead, targets)
         }
-        Button(article.isStarred ? String(localized: "Retirer des favoris") : String(localized: "Ajouter aux favoris")) {
-            article.isStarred.toggle()
+        Button(allStarred ? String(localized: "Retirer des favoris") : String(localized: "Ajouter aux favoris")) {
+            store.setStarred(!allStarred, targets)
         }
-        if let link = article.link, let url = URL(string: link) {
+        if targets.count == 1, let link = article.link, let url = URL(string: link) {
             Divider()
             Button("Ouvrir dans le navigateur") { NSWorkspace.shared.open(url) }
             Button("Copier le lien") {

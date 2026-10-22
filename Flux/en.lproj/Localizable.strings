@@ -1,5 +1,6 @@
 /* Interface de Flux en anglais. Clés = textes sources (français). */
 
+"%lld articles sélectionnés" = "%lld articles selected";
 "%lld flux importés, %lld ignorés (déjà présents ou invalides)." = "%lld feeds imported, %lld skipped (already present or invalid).";
 "(Mozilla, Apache 2.0)" = "(Mozilla, Apache 2.0)";
 "(Sans titre)" = "(Untitled)";
@@ -76,7 +77,11 @@
 "Les articles non lus et les favoris sont toujours conservés." = "Unread articles and favorites are always kept.";
 "Marquer automatiquement comme lus les anciens articles" = "Automatically mark old articles as read";
 "Marquer comme lu" = "Mark as Read";
+"Marquer comme lus" = "Mark as Read";
 "Marquer comme non lu" = "Mark as Unread";
+"Marquer comme non lus" = "Mark as Unread";
+"Marquer la sélection comme lue" = "Mark Selection as Read";
+"Marquer la sélection comme non lue" = "Mark Selection as Unread";
 "Marron" = "Brown";
 "Menthe" = "Mint";
 "Nom du dossier" = "Folder name";
@@ -125,3 +130,4 @@
 "https://exemple.fr/feed.xml" = "https://example.com/feed.xml";
 "À propos de Flux" = "About Flux";
 "Échec du téléchargement : %@" = "Download failed: %@";
+"⌘-clic pour ajouter ou retirer un article, ⇧-clic pour sélectionner une plage." = "⌘-click to add or remove an article, ⇧-click to select a range.";

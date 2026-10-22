@@ -53,6 +53,9 @@ dans /Applications.
 
 - **Recherche** (champ de la barre d'outils) : dans le titre et le texte complet
   des articles de la vue courante (tous les articles, un dossier, un flux…).
+- **Sélection multiple** : ⌘-clic, ⇧-clic, ⇧↑/↓ ou ⌘A. Les boutons « Marquer la
+  sélection comme lue / non lue » de la barre d'outils, le menu contextuel et les
+  touches m / s s'appliquent à toute la sélection.
 - **OPML** : Fichier › Importer des abonnements (⇧⌘I) reprend tes flux et leurs
   dossiers depuis un autre lecteur (NetNewsWire, Reeder, Feedly…) ; Fichier ›
   Exporter (⇧⌘E) les sauvegarde.
@@ -71,11 +74,12 @@ dans /Applications.
 | ⌘R | Actualiser |
 | ⇧⌘K | Tout marquer comme lu (dans la vue courante) |
 | ⌘, | Réglages |
-| ↑ / ↓ | Naviguer dans la liste |
+| ↑ / ↓ | Naviguer dans la liste (avec ⇧ : étendre la sélection) |
+| ⌘A | Sélectionner tous les articles de la liste |
 | j / k | Article suivant / précédent |
 | espace / ⇧ espace | Faire défiler l'article (en bas : article suivant) |
-| m | Marquer comme lu / non lu |
-| s | Ajouter aux / retirer des favoris |
+| m | Marquer comme lu / non lu (toute la sélection) |
+| s | Ajouter aux / retirer des favoris (toute la sélection) |
 | b | Ouvrir dans le navigateur |
 | ⇧⌘I / ⇧⌘E | Importer / exporter les abonnements (OPML) |
 

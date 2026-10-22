@@ -12,6 +12,7 @@ enum KeyCommand: Equatable {
     case toggleRead     // m
     case toggleStar     // s
     case openInBrowser  // b
+    case selectAll      // ⌘A
 }
 
 /// Intercepte les touches de la fenêtre principale et les transmet à la liste
@@ -45,6 +46,14 @@ final class KeyboardRouter {
         guard let window = event.window, window === mainWindow, window.attachedSheet == nil else { return false }
         // Champ de recherche, renommage… : la frappe doit passer
         if window.firstResponder is NSText { return false }
+
+        // ⌘A : tout sélectionner dans la liste (sauf si on est dans l'article : sélection du texte)
+        if !isInsideWebView(window.firstResponder),
+           event.modifierFlags.intersection([.command, .control, .option]) == .command,
+           event.charactersIgnoringModifiers?.lowercased() == "a" {
+            self.event = Event(command: .selectAll)
+            return true
+        }
         guard event.modifierFlags.intersection([.command, .control, .option]).isEmpty else { return false }
 
         let shift = event.modifierFlags.contains(.shift)
@@ -60,6 +69,15 @@ final class KeyboardRouter {
         }
         self.event = Event(command: command)
         return true
+    }
+
+    private func isInsideWebView(_ responder: NSResponder?) -> Bool {
+        var view = responder as? NSView
+        while let v = view {
+            if v is WKWebView { return true }
+            view = v.superview
+        }
+        return false
     }
 
     /// Fait défiler l'article d'environ un écran.

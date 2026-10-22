@@ -10,7 +10,8 @@ struct ContentView: View {
     @Environment(KeyboardRouter.self) private var keyboard
 
     @State private var filter: SidebarSelection? = .all
-    @State private var selectedKey: String?
+    /// Articles sélectionnés dans la liste (sélection multiple possible)
+    @State private var selectedKeys: Set<String> = []
     @State private var showAddFeed = false
     @State private var showNewFolder = false
     @State private var searchText = ""
@@ -39,7 +40,7 @@ struct ContentView: View {
     }
 
     private var selectedArticle: Article? {
-        guard let key = selectedKey else { return nil }
+        guard selectedKeys.count == 1, let key = selectedKeys.first else { return nil }
         var descriptor = FetchDescriptor<Article>(predicate: #Predicate { $0.key == key })
         descriptor.fetchLimit = 1
         return try? context.fetch(descriptor).first
@@ -56,7 +57,7 @@ struct ContentView: View {
             HStack(spacing: 0) {
                 ArticleListView(
                     filter: filter ?? .all,
-                    selection: $selectedKey,
+                    selection: $selectedKeys,
                     folderFeedURLs: folderFeedURLs,
                     searchText: searchText.trimmingCharacters(in: .whitespaces)
                 )
@@ -68,6 +69,8 @@ struct ContentView: View {
                     if let article = selectedArticle {
                         ArticleDetailView(article: article)
                             .id(article.key)
+                    } else if selectedKeys.count > 1 {
+                        MultiSelectionView(keys: selectedKeys)
                     } else {
                         ContentUnavailableView("Aucun article sélectionné", systemImage: "newspaper")
                     }
@@ -114,6 +117,22 @@ struct ContentView: View {
                 }
                 .keyboardShortcut("k", modifiers: [.command, .shift])
                 .help("Tout marquer comme lu (⇧⌘K)")
+
+                Button {
+                    store.setRead(true, store.articles(withKeys: selectedKeys))
+                } label: {
+                    Label("Marquer la sélection comme lue", systemImage: "envelope.open")
+                }
+                .disabled(selectedKeys.isEmpty)
+                .help("Marquer la sélection comme lue")
+
+                Button {
+                    store.setRead(false, store.articles(withKeys: selectedKeys))
+                } label: {
+                    Label("Marquer la sélection comme non lue", systemImage: "envelope.badge")
+                }
+                .disabled(selectedKeys.isEmpty)
+                .help("Marquer la sélection comme non lue")
             }
 
             ToolbarItem(placement: .primaryAction) {
@@ -148,9 +167,9 @@ struct ContentView: View {
             AddFeedSheet(initialFolderUID: currentFolderUID)
         }
         .onChange(of: filter) {
-            selectedKey = nil
+            selectedKeys = []
         }
-        .onChange(of: selectedKey) {
+        .onChange(of: selectedKeys) {
             if let article = selectedArticle, !article.isRead {
                 article.isRead = true
             }
@@ -221,6 +240,56 @@ struct ColumnResizer: View {
                 // Au cas où une valeur enregistrée sortirait des bornes
                 width = min(max(width, range.lowerBound), range.upperBound)
             }
+    }
+}
+
+/// Panneau de droite quand plusieurs articles sont sélectionnés
+struct MultiSelectionView: View {
+    let keys: Set<String>
+    @Environment(FeedStore.self) private var store
+
+    var body: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "square.stack.3d.up")
+                .font(.system(size: 44, weight: .light))
+                .foregroundStyle(.secondary)
+            Text("\(keys.count) articles sélectionnés")
+                .font(.title2.weight(.semibold))
+            VStack(spacing: 8) {
+                HStack(spacing: 8) {
+                    Button {
+                        store.setRead(true, store.articles(withKeys: keys))
+                    } label: {
+                        Label("Marquer comme lus", systemImage: "envelope.open")
+                    }
+                    Button {
+                        store.setRead(false, store.articles(withKeys: keys))
+                    } label: {
+                        Label("Marquer comme non lus", systemImage: "envelope.badge")
+                    }
+                }
+                HStack(spacing: 8) {
+                    Button {
+                        store.setStarred(true, store.articles(withKeys: keys))
+                    } label: {
+                        Label("Ajouter aux favoris", systemImage: "star")
+                    }
+                    Button {
+                        store.setStarred(false, store.articles(withKeys: keys))
+                    } label: {
+                        Label("Retirer des favoris", systemImage: "star.slash")
+                    }
+                }
+            }
+            .controlSize(.large)
+            Text("⌘-clic pour ajouter ou retirer un article, ⇧-clic pour sélectionner une plage.")
+                .font(.callout)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.top, 4)
+        }
+        .padding(32)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 

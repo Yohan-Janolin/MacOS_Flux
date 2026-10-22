@@ -233,6 +233,21 @@ final class FeedStore {
         try? context.save()
     }
 
+    func setRead(_ read: Bool, _ articles: [Article]) {
+        for article in articles where article.isRead != read { article.isRead = read }
+        try? context.save()
+    }
+
+    func setStarred(_ starred: Bool, _ articles: [Article]) {
+        for article in articles where article.isStarred != starred { article.isStarred = starred }
+        try? context.save()
+    }
+
+    func articles(withKeys keys: Set<String>) -> [Article] {
+        let list = Array(keys)
+        return (try? context.fetch(FetchDescriptor<Article>(predicate: #Predicate { list.contains($0.key) }))) ?? []
+    }
+
     func delete(_ feed: Feed) {
         context.delete(feed)
         try? context.save()
