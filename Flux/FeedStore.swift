@@ -19,7 +19,7 @@ final class FeedStore {
     // MARK: - Ajout
 
     @discardableResult
-    func addFeed(urlString: String) async throws -> Feed {
+    func addFeed(urlString: String, folder: Folder? = nil) async throws -> Feed {
         var s = urlString.trimmingCharacters(in: .whitespacesAndNewlines)
         if !s.contains("://") { s = "https://" + s }
         guard let url = URL(string: s), url.host() != nil else { throw FeedError.invalidURL }
@@ -33,6 +33,7 @@ final class FeedStore {
         let title = parsed.title.map(HTMLUtils.plainText).flatMap { $0.isEmpty ? nil : $0 } ?? url.host() ?? key
         let feed = Feed(url: key, title: title, siteURL: parsed.siteURL)
         context.insert(feed)
+        feed.folder = folder
         let added = ingest(parsed, into: feed)
         feed.lastRefreshed = .now
         try? context.save()
@@ -204,6 +205,9 @@ final class FeedStore {
             predicate = #Predicate { !$0.isRead && $0.feedURL == url }
         case .starred:
             predicate = #Predicate { !$0.isRead && $0.isStarred }
+        case .folder(let uid):
+            let urls = feedURLs(inFolder: uid)
+            predicate = #Predicate { !$0.isRead && urls.contains($0.feedURL) }
         case .all, .unread:
             predicate = #Predicate { !$0.isRead }
         }
@@ -215,6 +219,55 @@ final class FeedStore {
 
     func delete(_ feed: Feed) {
         context.delete(feed)
+        try? context.save()
+    }
+
+    // MARK: - Dossiers
+
+    func folder(uid: String) -> Folder? {
+        var descriptor = FetchDescriptor<Folder>(predicate: #Predicate { $0.uid == uid })
+        descriptor.fetchLimit = 1
+        return try? context.fetch(descriptor).first
+    }
+
+    func feedURLs(inFolder uid: String) -> [String] {
+        folder(uid: uid)?.feeds.map(\.url) ?? []
+    }
+
+    func createFolder(named name: String) {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        context.insert(Folder(name: trimmed))
+        try? context.save()
+    }
+
+    func rename(_ folder: Folder, to name: String) {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        folder.name = trimmed
+        try? context.save()
+    }
+
+    /// Les flux du dossier reviennent à la racine.
+    func delete(_ folder: Folder) {
+        for feed in folder.feeds { feed.folder = nil }
+        context.delete(folder)
+        try? context.save()
+    }
+
+    func move(_ feed: Feed, to folder: Folder?) {
+        feed.folder = folder
+        try? context.save()
+    }
+
+    /// Utilisé par le glisser-déposer (on transporte l'URL du flux).
+    func move(feedURLs urls: [String], to folder: Folder?) {
+        for url in urls {
+            let descriptor = FetchDescriptor<Feed>(predicate: #Predicate { $0.url == url })
+            if let feed = try? context.fetch(descriptor).first {
+                feed.folder = folder
+            }
+        }
         try? context.save()
     }
 

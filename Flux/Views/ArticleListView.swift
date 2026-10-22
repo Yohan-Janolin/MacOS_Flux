@@ -7,7 +7,8 @@ struct ArticleListView: View {
     @Binding var selection: String?
     private let filter: SidebarSelection
 
-    init(filter: SidebarSelection, selection: Binding<String?>) {
+    /// `folderFeedURLs` : adresses des flux du dossier quand `filter` est `.folder`
+    init(filter: SidebarSelection, selection: Binding<String?>, folderFeedURLs: [String] = []) {
         self.filter = filter
         self._selection = selection
 
@@ -23,6 +24,9 @@ struct ArticleListView: View {
             predicate = #Predicate { $0.isStarred }
         case .feed(let url):
             predicate = #Predicate { $0.feedURL == url }
+        case .folder:
+            let urls = folderFeedURLs
+            predicate = #Predicate { urls.contains($0.feedURL) }
         }
         var descriptor = FetchDescriptor<Article>(
             predicate: predicate,
@@ -81,7 +85,6 @@ struct ArticleRow: View {
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
             Thumbnail(url: article.imageURL.flatMap { URL(string: $0) })
-                .frame(width: 92, height: 69)
 
             VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: 6) {
@@ -94,7 +97,7 @@ struct ArticleRow: View {
                     if article.isStarred {
                         Image(systemName: "star.fill").foregroundStyle(.yellow)
                     }
-                    Text(article.published.formatted(.relative(presentation: .named)))
+                    Text(article.published.formatted(.relative(presentation: .named).locale(.fr)))
                         .lineLimit(1)
                 }
                 .font(.caption)
@@ -119,24 +122,29 @@ struct ArticleRow: View {
 
 struct Thumbnail: View {
     let url: URL?
+    var width: CGFloat = 92
+    var height: CGFloat = 69
 
     var body: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .fill(.quaternary)
-            if let url {
-                AsyncImage(url: url, transaction: Transaction(animation: .easeIn(duration: 0.2))) { phase in
-                    if let image = phase.image {
-                        image.resizable().scaledToFill()
-                    } else {
-                        placeholder
+        // Le cadre est fixé AVANT l'image : l'overlay ne peut pas agrandir la vue,
+        // et le clipShape recadre l'image en scaledToFill à la bonne taille.
+        RoundedRectangle(cornerRadius: 8, style: .continuous)
+            .fill(.quaternary)
+            .frame(width: width, height: height)
+            .overlay {
+                if let url {
+                    AsyncImage(url: url, transaction: Transaction(animation: .easeIn(duration: 0.2))) { phase in
+                        if let image = phase.image {
+                            image.resizable().scaledToFill()
+                        } else {
+                            placeholder
+                        }
                     }
+                } else {
+                    placeholder
                 }
-            } else {
-                placeholder
             }
-        }
-        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
     }
 
     private var placeholder: some View {

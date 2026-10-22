@@ -1,12 +1,19 @@
+import SwiftData
 import SwiftUI
 
 struct AddFeedSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(FeedStore.self) private var store
+    @Query(sort: \Folder.name) private var folders: [Folder]
 
     @State private var address = ""
+    @State private var folderUID: String?
     @State private var working = false
     @State private var errorMessage: String?
+
+    init(initialFolderUID: String? = nil) {
+        _folderUID = State(initialValue: initialFolderUID)
+    }
 
     private var canSubmit: Bool {
         !address.trimmingCharacters(in: .whitespaces).isEmpty && !working
@@ -25,6 +32,17 @@ struct AddFeedSheet: View {
                 .textFieldStyle(.roundedBorder)
                 .onSubmit { if canSubmit { add() } }
                 .disabled(working)
+
+            if !folders.isEmpty {
+                Picker("Dossier", selection: $folderUID) {
+                    Text("Aucun").tag(String?.none)
+                    Divider()
+                    ForEach(folders) { folder in
+                        Text(folder.name).tag(Optional(folder.uid))
+                    }
+                }
+                .disabled(working)
+            }
 
             if let errorMessage {
                 Text(errorMessage)
@@ -58,7 +76,8 @@ struct AddFeedSheet: View {
             working = true
             errorMessage = nil
             do {
-                try await store.addFeed(urlString: address)
+                let folder = folders.first { $0.uid == folderUID }
+                try await store.addFeed(urlString: address, folder: folder)
                 dismiss()
             } catch {
                 errorMessage = error.localizedDescription

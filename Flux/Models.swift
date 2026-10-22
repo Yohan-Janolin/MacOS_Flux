@@ -9,6 +9,7 @@ final class Feed {
     var addedAt: Date
     var lastRefreshed: Date?
     var lastError: String?
+    var folder: Folder?
 
     @Relationship(deleteRule: .cascade, inverse: \Article.feed)
     var articles: [Article] = []
@@ -24,6 +25,29 @@ final class Feed {
         guard let host = URL(string: siteURL ?? url)?.host() else { return nil }
         return URL(string: "https://\(host)/favicon.ico")
     }
+}
+
+@Model
+final class Folder {
+    @Attribute(.unique) var uid: String
+    var name: String
+    var isExpanded: Bool
+    var createdAt: Date
+
+    /// Supprimer un dossier ne supprime pas ses flux : ils reviennent à la racine.
+    @Relationship(deleteRule: .nullify, inverse: \Feed.folder)
+    var feeds: [Feed] = []
+
+    init(name: String) {
+        self.uid = UUID().uuidString
+        self.name = name
+        self.isExpanded = true
+        self.createdAt = .now
+    }
+}
+
+extension Locale {
+    static let fr = Locale(identifier: "fr_FR")
 }
 
 @Model

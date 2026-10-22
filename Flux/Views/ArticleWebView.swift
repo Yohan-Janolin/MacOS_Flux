@@ -49,7 +49,7 @@ enum ReaderTemplate {
             .compactMap { $0 }
             .filter { !$0.isEmpty }
             .map(HTMLUtils.escape)
-        meta.append(article.published.formatted(date: .long, time: .shortened))
+        meta.append(article.published.formatted(Date.FormatStyle(date: .long, time: .shortened, locale: .fr)))
 
         var hero = ""
         if let image = article.imageURL {

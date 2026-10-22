@@ -6,22 +6,26 @@ enum SidebarSelection: Hashable {
     case all
     case unread
     case starred
-    case feed(String)
+    case folder(String)   // Folder.uid
+    case feed(String)     // Feed.url
 }
 
 struct SidebarView: View {
     @Binding var selection: SidebarSelection?
+    @Binding var showNewFolder: Bool
     @Environment(FeedStore.self) private var store
 
     @Query(sort: \Feed.title) private var feeds: [Feed]
+    @Query(sort: \Folder.name) private var folders: [Folder]
     @Query(filter: #Predicate<Article> { !$0.isRead }) private var unread: [Article]
 
-    private var unreadByFeed: [String: Int] {
-        Dictionary(grouping: unread, by: \.feedURL).mapValues(\.count)
-    }
+    @State private var newFolderName = ""
+    @State private var renamingFolder: Folder?
+    @State private var renameText = ""
 
     var body: some View {
-        let counts = unreadByFeed
+        let counts = Dictionary(grouping: unread, by: \.feedURL).mapValues(\.count)
+
         List(selection: $selection) {
             Section {
                 Label("Tous les articles", systemImage: "tray.full")
@@ -33,37 +37,131 @@ struct SidebarView: View {
                     .tag(SidebarSelection.starred)
             }
 
-            Section("Flux") {
-                if feeds.isEmpty {
+            Section {
+                if feeds.isEmpty && folders.isEmpty {
                     Text("Ajoute un flux avec le bouton +")
                         .font(.callout)
                         .foregroundStyle(.secondary)
                 }
-                ForEach(feeds) { feed in
-                    FeedRow(feed: feed)
-                        .badge(counts[feed.url] ?? 0)
-                        .tag(SidebarSelection.feed(feed.url))
-                        .contextMenu {
-                            Button("Tout marquer comme lu") { store.markAllRead(.feed(feed.url)) }
-                            Button("Actualiser") { Task { await store.refresh(feed) } }
-                            if let site = feed.siteURL, let url = URL(string: site) {
-                                Button("Ouvrir le site") { NSWorkspace.shared.open(url) }
-                            }
-                            Button("Copier l'adresse du flux") {
-                                NSPasteboard.general.clearContents()
-                                NSPasteboard.general.setString(feed.url, forType: .string)
-                            }
-                            Divider()
-                            Button("Supprimer le flux", role: .destructive) {
-                                if selection == .feed(feed.url) { selection = .all }
-                                store.delete(feed)
-                            }
-                        }
+
+                ForEach(folders) { folder in
+                    folderGroup(folder, counts: counts)
                 }
+
+                ForEach(feeds.filter { $0.folder == nil }) { feed in
+                    feedRow(feed, counts: counts)
+                }
+            } header: {
+                Text("Flux")
+                    // Déposer un flux sur l'en-tête le sort de son dossier
+                    .dropDestination(for: String.self) { urls, _ in
+                        store.move(feedURLs: urls, to: nil)
+                        return true
+                    }
             }
         }
         .listStyle(.sidebar)
         .navigationSplitViewColumnWidth(min: 190, ideal: 230)
+        .contextMenu {
+            Button("Nouveau dossier…") { showNewFolder = true }
+        }
+        .alert("Nouveau dossier", isPresented: $showNewFolder) {
+            TextField("Nom du dossier", text: $newFolderName)
+            Button("Créer") {
+                store.createFolder(named: newFolderName)
+                newFolderName = ""
+            }
+            Button("Annuler", role: .cancel) { newFolderName = "" }
+        }
+        .alert("Renommer le dossier", isPresented: Binding(
+            get: { renamingFolder != nil },
+            set: { if !$0 { renamingFolder = nil } }
+        )) {
+            TextField("Nom du dossier", text: $renameText)
+            Button("Renommer") {
+                if let folder = renamingFolder { store.rename(folder, to: renameText) }
+            }
+            Button("Annuler", role: .cancel) {}
+        }
+    }
+
+    // MARK: - Dossier
+
+    private func folderGroup(_ folder: Folder, counts: [String: Int]) -> some View {
+        let folderFeeds = feeds.filter { $0.folder?.uid == folder.uid }
+        let unreadInFolder = folderFeeds.reduce(0) { $0 + (counts[$1.url] ?? 0) }
+
+        return DisclosureGroup(isExpanded: Binding(
+            get: { folder.isExpanded },
+            set: { folder.isExpanded = $0 }
+        )) {
+            ForEach(folderFeeds) { feed in
+                feedRow(feed, counts: counts)
+            }
+        } label: {
+            Label(folder.name, systemImage: "folder")
+                .badge(unreadInFolder)
+                .tag(SidebarSelection.folder(folder.uid))
+                .dropDestination(for: String.self) { urls, _ in
+                    store.move(feedURLs: urls, to: folder)
+                    folder.isExpanded = true
+                    return true
+                }
+                .contextMenu {
+                    Button("Tout marquer comme lu") { store.markAllRead(.folder(folder.uid)) }
+                    Button("Actualiser") {
+                        Task { for feed in folderFeeds { await store.refresh(feed) } }
+                    }
+                    Divider()
+                    Button("Renommer…") {
+                        renameText = folder.name
+                        renamingFolder = folder
+                    }
+                    Button("Nouveau dossier…") { showNewFolder = true }
+                    Divider()
+                    Button("Supprimer le dossier", role: .destructive) {
+                        if selection == .folder(folder.uid) { selection = .all }
+                        store.delete(folder)
+                    }
+                }
+        }
+    }
+
+    // MARK: - Flux
+
+    private func feedRow(_ feed: Feed, counts: [String: Int]) -> some View {
+        FeedRow(feed: feed)
+            .badge(counts[feed.url] ?? 0)
+            .tag(SidebarSelection.feed(feed.url))
+            .draggable(feed.url)
+            .contextMenu {
+                Button("Tout marquer comme lu") { store.markAllRead(.feed(feed.url)) }
+                Button("Actualiser") { Task { await store.refresh(feed) } }
+
+                Menu("Déplacer vers") {
+                    ForEach(folders) { folder in
+                        Button(folder.name) { store.move(feed, to: folder) }
+                            .disabled(feed.folder?.uid == folder.uid)
+                    }
+                    if !folders.isEmpty { Divider() }
+                    Button("Hors dossier") { store.move(feed, to: nil) }
+                        .disabled(feed.folder == nil)
+                }
+
+                Divider()
+                if let site = feed.siteURL, let url = URL(string: site) {
+                    Button("Ouvrir le site") { NSWorkspace.shared.open(url) }
+                }
+                Button("Copier l'adresse du flux") {
+                    NSPasteboard.general.clearContents()
+                    NSPasteboard.general.setString(feed.url, forType: .string)
+                }
+                Divider()
+                Button("Supprimer le flux", role: .destructive) {
+                    if selection == .feed(feed.url) { selection = .all }
+                    store.delete(feed)
+                }
+            }
     }
 }
 

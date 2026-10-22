@@ -39,6 +39,10 @@ dans /Applications.
   permet de basculer manuellement.
 - **Lecture** : affichage dans un WKWebView avec JavaScript désactivé ; les liens
   s'ouvrent dans ton navigateur par défaut. Mode sombre pris en charge.
+- **Dossiers** (⇧⌘N) : repliables, avec le total des non-lus. Range un flux en
+  le glissant sur un dossier, ou via clic droit › Déplacer vers. Glisser un flux
+  sur l'en-tête « Flux » le sort de son dossier. Supprimer un dossier ne supprime
+  pas ses flux.
 - **Actualisation** : au lancement, toutes les 30 minutes, et avec ⌘R.
 - **Nettoyage** : les articles lus et non favoris de plus de 60 jours sont
   supprimés.
@@ -49,6 +53,7 @@ dans /Applications.
 | Raccourci | Action |
 |---|---|
 | ⌘N | Ajouter un flux |
+| ⇧⌘N | Nouveau dossier |
 | ⌘R | Actualiser |
 | ⇧⌘K | Tout marquer comme lu (dans la vue courante) |
 | ↑ / ↓ | Naviguer dans la liste |
@@ -71,7 +76,6 @@ Flux/
 ## Pistes pour la suite
 
 - Import/export OPML
-- Dossiers ou tags de flux
 - Recherche dans les articles
 - Raccourcis clavier façon Reeder (j/k, espace pour défiler, m pour lu/non lu)
 - Réglages : intervalle d'actualisation, durée de rétention, taille du texte

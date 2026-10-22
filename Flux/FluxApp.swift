@@ -18,7 +18,7 @@ struct FluxApp: App {
 
         let modelContainer: ModelContainer
         do {
-            modelContainer = try ModelContainer(for: Feed.self, Article.self, configurations: configuration)
+            modelContainer = try ModelContainer(for: Feed.self, Article.self, Folder.self, configurations: configuration)
         } catch {
             fatalError("Impossible d'ouvrir la base : \(error)")
         }

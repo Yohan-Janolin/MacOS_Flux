@@ -8,6 +8,24 @@ struct ContentView: View {
     @State private var filter: SidebarSelection? = .all
     @State private var selectedKey: String?
     @State private var showAddFeed = false
+    @State private var showNewFolder = false
+
+    /// Observé pour que la liste se mette à jour quand on déplace un flux de dossier
+    @Query private var feeds: [Feed]
+
+    private var folderFeedURLs: [String] {
+        guard case .folder(let uid) = filter ?? .all else { return [] }
+        return feeds.filter { $0.folder?.uid == uid }.map(\.url)
+    }
+
+    /// Dossier pré-sélectionné dans la fenêtre d'ajout
+    private var currentFolderUID: String? {
+        switch filter ?? .all {
+        case .folder(let uid): uid
+        case .feed(let url): feeds.first { $0.url == url }?.folder?.uid
+        default: nil
+        }
+    }
 
     private var selectedArticle: Article? {
         guard let key = selectedKey else { return nil }
@@ -18,9 +36,9 @@ struct ContentView: View {
 
     var body: some View {
         NavigationSplitView {
-            SidebarView(selection: $filter)
+            SidebarView(selection: $filter, showNewFolder: $showNewFolder)
         } content: {
-            ArticleListView(filter: filter ?? .all, selection: $selectedKey)
+            ArticleListView(filter: filter ?? .all, selection: $selectedKey, folderFeedURLs: folderFeedURLs)
                 .navigationSplitViewColumnWidth(min: 320, ideal: 400)
         } detail: {
             if let article = selectedArticle {
@@ -39,6 +57,14 @@ struct ContentView: View {
                 }
                 .keyboardShortcut("n")
                 .help("Ajouter un flux (⌘N)")
+
+                Button {
+                    showNewFolder = true
+                } label: {
+                    Label("Nouveau dossier", systemImage: "folder.badge.plus")
+                }
+                .keyboardShortcut("n", modifiers: [.command, .shift])
+                .help("Nouveau dossier (⇧⌘N)")
 
                 Button {
                     Task { await store.refreshAll() }
@@ -63,7 +89,7 @@ struct ContentView: View {
             }
         }
         .sheet(isPresented: $showAddFeed) {
-            AddFeedSheet()
+            AddFeedSheet(initialFolderUID: currentFolderUID)
         }
         .onChange(of: filter) {
             selectedKey = nil
