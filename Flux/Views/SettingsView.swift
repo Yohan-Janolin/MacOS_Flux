@@ -9,6 +9,8 @@ struct SettingsView: View {
     @AppStorage(Prefs.retentionDays) private var retentionDays = 60
     @AppStorage(Prefs.appearance) private var appearance = AppAppearance.system
     @AppStorage(Prefs.markReadDelay) private var markReadDelay = 0
+    @AppStorage(Prefs.showSummary) private var showSummary = true
+    @AppStorage(Prefs.readerWidth) private var readerWidth = "narrow"
     @AppStorage(Prefs.offlineEnabled) private var offlineEnabled = false
     @AppStorage(Prefs.imageCacheLimitMB) private var imageCacheLimitMB = 1024
     @State private var cacheSize: Int64?
@@ -49,6 +51,15 @@ struct SettingsView: View {
                 }
             } header: {
                 Text("Général")
+            }
+
+            Section("Affichage") {
+                Toggle("Afficher le résumé sous le titre (mode liste)", isOn: $showSummary)
+                Picker("Largeur du texte de l'article", selection: $readerWidth) {
+                    Text("Étroite").tag("narrow")
+                    Text("Large").tag("wide")
+                    Text("Toute la largeur").tag("full")
+                }
             }
 
             Section {

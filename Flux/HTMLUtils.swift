@@ -118,6 +118,23 @@ enum HTMLUtils {
         return URL(string: s, relativeTo: base)?.absoluteURL.absoluteString
     }
 
+    // MARK: - Extraits
+
+    /// Le contenu fourni par le flux n'est-il qu'un extrait ? Court, ou tronqué
+    /// (points de suspension finaux, « Lire la suite », mention d'abonnement…).
+    static func looksLikeExcerpt(_ html: String?) -> Bool {
+        let text = plainText(html ?? "")
+        if text.count < 700 { return true }
+        guard text.count < 4000 else { return false }
+        let lower = text.lowercased()
+        let tail = String(lower.suffix(160))
+        let endings = ["…", "...", "[…]", "[...]", "(…)", "(...)"]
+        if endings.contains(where: { tail.trimmingCharacters(in: .whitespaces).hasSuffix($0) }) { return true }
+        let markers = ["lire la suite", "suite de l'article", "lire l'article", "continue reading", "read more",
+                       "appeared first on", "est apparu en premier sur", "réservé aux abonnés", "seuls les abonnés"]
+        return markers.contains { tail.contains($0) || (lower.contains($0) && text.count < 2000) }
+    }
+
     // MARK: - Images de la vue de lecture
 
     private static let srcsetAttr = regex("\\s(srcset|sizes|data-srcset|loading)\\s*=\\s*(\"[^\"]*\"|'[^']*'|[^\\s>]+)")

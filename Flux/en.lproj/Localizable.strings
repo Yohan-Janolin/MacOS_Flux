@@ -25,7 +25,9 @@
 "Actualiser tous les flux (⌘R)" = "Refresh all feeds (⌘R)";
 "Actualiser" = "Refresh";
 "Adresse invalide." = "Invalid address.";
+"Affichage" = "Display";
 "Afficher le contenu fourni par le flux" = "Show the content provided by the feed";
+"Afficher le résumé sous le titre (mode liste)" = "Show summary under the title (list view)";
 "Ajoute un flux avec le bouton +, ou importe tes abonnements depuis le menu Fichier." = "Add a feed with the + button, or import your subscriptions from the File menu.";
 "Ajouter aux favoris" = "Add to Favorites";
 "Ajouter un flux (⌘N)" = "Add Feed (⌘N)";
@@ -91,6 +93,9 @@
 "La nouvelle langue sera appliquée au redémarrage de l'app." = "The new language will be applied when the app restarts.";
 "Langue du système" = "System Language";
 "Langue" = "Language";
+"Large" = "Wide";
+"Largeur du texte de l'article" = "Article text width";
+"Largeur du texte" = "Text Width";
 "Le serveur a répondu avec l'erreur %lld." = "The server responded with error %lld.";
 "Lecture" = "Reading";
 "Les articles non lus et les favoris sont toujours conservés." = "Unread articles and favorites are always kept.";
@@ -151,6 +156,7 @@
 "Tout est lu" = "All Caught Up";
 "Tout marquer comme lu (⇧⌘K)" = "Mark All as Read (⇧⌘K)";
 "Tout marquer comme lu" = "Mark All as Read";
+"Toute la largeur" = "Full Width";
 "Toutes les 15 minutes" = "Every 15 minutes";
 "Toutes les 2 heures" = "Every 2 hours";
 "Toutes les 30 minutes" = "Every 30 minutes";
@@ -166,4 +172,5 @@
 "https://exemple.fr/feed.xml" = "https://example.com/feed.xml";
 "À propos de Flux" = "About Flux";
 "Échec du téléchargement : %@" = "Download failed: %@";
+"Étroite" = "Narrow";
 "⌘-clic pour ajouter ou retirer un article, ⇧-clic pour sélectionner une plage." = "⌘-click to add or remove an article, ⇧-click to select a range.";

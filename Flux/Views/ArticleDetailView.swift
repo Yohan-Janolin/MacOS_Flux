@@ -5,6 +5,7 @@ struct ArticleDetailView: View {
     let article: Article
 
     @State private var showFull = false
+    @AppStorage(Prefs.readerWidth) private var readerWidth = "narrow"
     @State private var loading = false
     @State private var errorMessage: String?
 
@@ -17,7 +18,7 @@ struct ArticleDetailView: View {
     }
 
     var body: some View {
-        ArticleWebView(html: ReaderTemplate.render(article, body: bodyHTML), baseURL: articleURL)
+        ArticleWebView(html: ReaderTemplate.render(article, body: bodyHTML, width: readerWidth), baseURL: articleURL)
             .overlay(alignment: .top) {
                 if loading {
                     HStack(spacing: 8) {
@@ -44,6 +45,19 @@ struct ArticleDetailView: View {
             }
             .animation(.easeInOut(duration: 0.2), value: loading)
             .toolbar {
+                ToolbarItem {
+                    Menu {
+                        Picker("Largeur du texte", selection: $readerWidth) {
+                            Label("Étroite", systemImage: "rectangle.portrait").tag("narrow")
+                            Label("Large", systemImage: "rectangle").tag("wide")
+                            Label("Toute la largeur", systemImage: "arrow.left.and.right").tag("full")
+                        }
+                        .pickerStyle(.inline)
+                    } label: {
+                        Label("Largeur du texte", systemImage: "arrow.left.and.right.text.vertical")
+                    }
+                    .help("Largeur du texte")
+                }
                 ToolbarItemGroup {
                     Button {
                         toggleFull()
@@ -81,8 +95,8 @@ struct ArticleDetailView: View {
             showFull = true
             return
         }
-        let feedTextLength = HTMLUtils.plainText(article.contentHTML ?? "").count
-        if feedTextLength < 700, articleURL != nil {
+        // Le flux ne donne qu'un extrait (court, ou tronqué par « … » / « Lire la suite ») : on va chercher l'article
+        if HTMLUtils.looksLikeExcerpt(article.contentHTML), articleURL != nil {
             await loadFull()
         }
     }

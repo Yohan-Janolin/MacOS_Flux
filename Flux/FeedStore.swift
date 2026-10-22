@@ -308,7 +308,7 @@ final class FeedStore {
 
         // 1. Articles complets (téléchargement 4 par 4, extraction une par une)
         let needFull = articles.filter {
-            $0.fullHTML == nil && $0.link != nil && HTMLUtils.plainText($0.contentHTML ?? "").count < 700
+            $0.fullHTML == nil && $0.link != nil && HTMLUtils.looksLikeExcerpt($0.contentHTML)
         }
         var done = 0
         for start in stride(from: 0, to: needFull.count, by: 4) {

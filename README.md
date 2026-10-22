@@ -35,7 +35,8 @@ dans /Applications.
   caractères), l'app télécharge la page et en extrait le contenu principal avec
   [Readability.js](https://github.com/mozilla/readability) (le moteur du mode
   Lecture de Firefox, licence Apache 2.0), exécuté dans un WKWebView invisible.
-  Le résultat est mis en cache. Le bouton « Article complet / Version du flux »
+  Un extrait est aussi reconnu à ses points de suspension finaux ou à un
+  « Lire la suite ». Le résultat est mis en cache. Le bouton « Article complet / Version du flux »
   permet de basculer manuellement.
 - **Lecture** : affichage dans un WKWebView avec JavaScript désactivé ; les liens
   s'ouvrent dans ton navigateur par défaut. Mode sombre pris en charge.
@@ -60,6 +61,9 @@ dans /Applications.
 
 - **Recherche** (champ de la barre d'outils) : dans le titre et le texte complet
   des articles de la vue courante (tous les articles, un dossier, un flux…).
+- **Affichage** : largeur du texte de l'article (étroite, large, toute la
+  largeur) dans la barre d'outils de l'article ou les réglages ; résumé sous le
+  titre masquable en mode liste (Réglages › Affichage).
 - **Présentation** : liste détaillée ou vignettes (image + titre), au choix dans
   la barre d'outils. En vignettes, les flèches se déplacent dans la grille.
 - **Sélection multiple** : ⌘-clic, ⇧-clic, ⇧↑/↓ ou ⌘A. Les boutons « Marquer la

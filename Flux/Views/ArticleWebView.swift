@@ -49,7 +49,13 @@ struct ArticleWebView: NSViewRepresentable {
 }
 
 enum ReaderTemplate {
-    static func render(_ article: Article, body: String) -> String {
+    /// `width` : "narrow" (680 pt, confortable à lire), "wide" (960 pt) ou "full" (toute la largeur)
+    static func render(_ article: Article, body: String, width: String = "narrow") -> String {
+        let maxWidth = switch width {
+        case "full": "none"
+        case "wide": "960px"
+        default: "680px"
+        }
         var meta = [article.feed?.displayTitle, article.author]
             .compactMap { $0 }
             .filter { !$0.isEmpty }
@@ -73,7 +79,7 @@ enum ReaderTemplate {
         <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <style>\(css)</style>
+        <style>\(css) article { max-width: \(maxWidth); }</style>
         </head>
         <body>
         <article>

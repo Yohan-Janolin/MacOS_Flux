@@ -83,6 +83,9 @@ struct ArticleListView: View {
     /// hauteur, la hauteur totale de la liste est connue d'avance : l'ascenseur
     /// ne peut plus « trembler » pendant le défilement.
     static let rowHeight: CGFloat = 100
+    /// Hauteur sans le résumé (miniature de 69 pt + marges)
+    static let compactRowHeight: CGFloat = 84
+    @AppStorage(Prefs.showSummary) private var showSummary = true
 
     @FocusState private var isFocused: Bool
     @AppStorage(Prefs.articleLayout) private var layout = "list"
@@ -181,10 +184,10 @@ struct ArticleListView: View {
 
     private func row(for article: Article) -> some View {
         let isSelected = selection.contains(article.key)
-        return ArticleRow(article: article)
+        return ArticleRow(article: article, showSummary: showSummary)
             .padding(.horizontal, 10)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .frame(height: Self.rowHeight)
+            .frame(height: showSummary ? Self.rowHeight : Self.compactRowHeight)
             .background {
                 if isSelected {
                     RoundedRectangle(cornerRadius: 8, style: .continuous)
@@ -341,6 +344,7 @@ struct ArticleListView: View {
 
 struct ArticleRow: View {
     let article: Article
+    var showSummary = true
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
@@ -369,10 +373,12 @@ struct ArticleRow: View {
                     .foregroundStyle(article.isRead ? .secondary : .primary)
                     .lineLimit(2, reservesSpace: true)
 
-                Text(article.summary)
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(2, reservesSpace: true)
+                if showSummary {
+                    Text(article.summary)
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2, reservesSpace: true)
+                }
             }
         }
     }

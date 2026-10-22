@@ -16,6 +16,10 @@ enum Prefs {
     static let offlineEnabled = "offlineEnabled"
     /// Taille maximale du cache d'images, en Mo
     static let imageCacheLimitMB = "imageCacheLimitMB"
+    /// Largeur du texte dans la vue de lecture : "narrow", "wide" ou "full"
+    static let readerWidth = "readerWidth"
+    /// Afficher le résumé sous le titre en mode liste
+    static let showSummary = "showSummary"
 
     static let defaults: [String: Any] = [
         autoMarkReadEnabled: false,
@@ -26,6 +30,8 @@ enum Prefs {
         markReadDelay: 0,
         offlineEnabled: false,
         imageCacheLimitMB: 1024,
+        readerWidth: "narrow",
+        showSummary: true,
     ]
 
     static func register() {
