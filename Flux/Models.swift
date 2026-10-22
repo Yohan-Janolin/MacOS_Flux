@@ -1,5 +1,6 @@
 import Foundation
 import SwiftData
+import SwiftUI
 
 @Model
 final class Feed {
@@ -33,6 +34,10 @@ final class Folder {
     var name: String
     var isExpanded: Bool
     var createdAt: Date
+    /// Nom d'un symbole SF Symbols (nil = "folder")
+    var symbol: String?
+    /// Nom d'une FolderColor (nil = couleur d'accent)
+    var colorName: String?
 
     /// Supprimer un dossier ne supprime pas ses flux : ils reviennent à la racine.
     @Relationship(deleteRule: .nullify, inverse: \Feed.folder)
@@ -43,6 +48,35 @@ final class Folder {
         self.name = name
         self.isExpanded = true
         self.createdAt = .now
+    }
+}
+
+extension Folder {
+    var symbolName: String { symbol ?? "folder" }
+    var tint: Color? { colorName.flatMap(FolderColor.init(rawValue:))?.color }
+}
+
+enum FolderColor: String, CaseIterable, Identifiable {
+    case red, orange, yellow, green, mint, teal, cyan, blue, indigo, purple, pink, brown, gray
+
+    var id: String { rawValue }
+
+    var color: Color {
+        switch self {
+        case .red: .red
+        case .orange: .orange
+        case .yellow: .yellow
+        case .green: .green
+        case .mint: .mint
+        case .teal: .teal
+        case .cyan: .cyan
+        case .blue: .blue
+        case .indigo: .indigo
+        case .purple: .purple
+        case .pink: .pink
+        case .brown: .brown
+        case .gray: .gray
+        }
     }
 }
 

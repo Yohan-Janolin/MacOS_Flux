@@ -20,8 +20,7 @@ struct SidebarView: View {
     @Query(filter: #Predicate<Article> { !$0.isRead }) private var unread: [Article]
 
     @State private var newFolderName = ""
-    @State private var renamingFolder: Folder?
-    @State private var renameText = ""
+    @State private var editingFolder: Folder?
 
     var body: some View {
         let counts = Dictionary(grouping: unread, by: \.feedURL).mapValues(\.count)
@@ -73,15 +72,8 @@ struct SidebarView: View {
             }
             Button("Annuler", role: .cancel) { newFolderName = "" }
         }
-        .alert("Renommer le dossier", isPresented: Binding(
-            get: { renamingFolder != nil },
-            set: { if !$0 { renamingFolder = nil } }
-        )) {
-            TextField("Nom du dossier", text: $renameText)
-            Button("Renommer") {
-                if let folder = renamingFolder { store.rename(folder, to: renameText) }
-            }
-            Button("Annuler", role: .cancel) {}
+        .sheet(item: $editingFolder) { folder in
+            FolderEditSheet(folder: folder)
         }
     }
 
@@ -99,7 +91,12 @@ struct SidebarView: View {
                 feedRow(feed, counts: counts)
             }
         } label: {
-            Label(folder.name, systemImage: "folder")
+            Label {
+                Text(folder.name)
+            } icon: {
+                Image(systemName: folder.symbolName)
+                    .foregroundStyle(folder.tint ?? Color.accentColor)
+            }
                 .badge(unreadInFolder)
                 .tag(SidebarSelection.folder(folder.uid))
                 .dropDestination(for: String.self) { urls, _ in
@@ -113,10 +110,7 @@ struct SidebarView: View {
                         Task { for feed in folderFeeds { await store.refresh(feed) } }
                     }
                     Divider()
-                    Button("Renommer…") {
-                        renameText = folder.name
-                        renamingFolder = folder
-                    }
+                    Button("Personnaliser…") { editingFolder = folder }
                     Button("Nouveau dossier…") { showNewFolder = true }
                     Divider()
                     Button("Supprimer le dossier", role: .destructive) {

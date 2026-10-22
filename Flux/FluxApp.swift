@@ -7,6 +7,8 @@ struct FluxApp: App {
     @State private var store: FeedStore
 
     init() {
+        Prefs.register()
+
         // Cache disque généreux pour les miniatures (AsyncImage passe par URLCache.shared)
         URLCache.shared = URLCache(memoryCapacity: 64 << 20, diskCapacity: 512 << 20)
 
@@ -34,5 +36,22 @@ struct FluxApp: App {
         }
         .defaultSize(width: 1280, height: 820)
         .modelContainer(container)
+        .commands {
+            CommandGroup(replacing: .appInfo) {
+                AboutMenuItem()
+            }
+        }
+
+        Window("À propos de Flux", id: "about") {
+            AboutView()
+        }
+        .windowStyle(.hiddenTitleBar)
+        .windowResizability(.contentSize)
+        .defaultPosition(.center)
+
+        Settings {
+            SettingsView()
+                .environment(store)
+        }
     }
 }

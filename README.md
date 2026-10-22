@@ -42,10 +42,13 @@ dans /Applications.
 - **Dossiers** (⇧⌘N) : repliables, avec le total des non-lus. Range un flux en
   le glissant sur un dossier, ou via clic droit › Déplacer vers. Glisser un flux
   sur l'en-tête « Flux » le sort de son dossier. Supprimer un dossier ne supprime
-  pas ses flux.
-- **Actualisation** : au lancement, toutes les 30 minutes, et avec ⌘R.
-- **Nettoyage** : les articles lus et non favoris de plus de 60 jours sont
-  supprimés.
+  pas ses flux. Clic droit › Personnaliser… pour changer le nom, la couleur et
+  l'icône (SF Symbols).
+- **Actualisation** : au lancement, à intervalle régulier (30 minutes par
+  défaut), et avec ⌘R.
+- **Réglages** (⌘,) : marquer automatiquement comme lus les articles de plus de
+  X jours (hors favoris), intervalle d'actualisation, durée de conservation des
+  articles lus (2 mois par défaut ; non lus et favoris toujours conservés).
 - **Données** : `~/Library/Application Support/Flux/Flux.store` (SwiftData).
 
 ## Raccourcis
@@ -56,6 +59,7 @@ dans /Applications.
 | ⇧⌘N | Nouveau dossier |
 | ⌘R | Actualiser |
 | ⇧⌘K | Tout marquer comme lu (dans la vue courante) |
+| ⌘, | Réglages |
 | ↑ / ↓ | Naviguer dans la liste |
 
 ## Structure
@@ -69,8 +73,11 @@ Flux/
 ├── ArticleExtractor.swift Readability.js dans un WKWebView invisible
 ├── HTMLUtils.swift        texte brut, entités, images, découverte de flux
 ├── Net.swift              URLSession + erreurs
+├── Settings.swift         clés et valeurs par défaut des réglages
 ├── Views/                 interface SwiftUI
+├── Assets.xcassets        icône de l'app
 └── Resources/Readability.js
+Design/                    source de l'icône (script Python + PNG 1024 px)
 ```
 
 ## Pistes pour la suite
@@ -78,4 +85,4 @@ Flux/
 - Import/export OPML
 - Recherche dans les articles
 - Raccourcis clavier façon Reeder (j/k, espace pour défiler, m pour lu/non lu)
-- Réglages : intervalle d'actualisation, durée de rétention, taille du texte
+- Réglage de la taille du texte de lecture

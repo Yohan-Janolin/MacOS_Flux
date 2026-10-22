@@ -8,10 +8,6 @@ final class FeedStore {
     private(set) var isRefreshing = false
     @ObservationIgnored let context: ModelContext
 
-    /// Les articles lus (et non favoris) plus vieux que ça sont supprimés,
-    /// et on n'importe pas les articles plus anciens.
-    private let retention: TimeInterval = 60 * 24 * 3600
-
     init(context: ModelContext) {
         self.context = context
     }
@@ -82,6 +78,7 @@ final class FeedStore {
             guard let result = results[feed.url] else { continue }
             added += apply(result, to: feed)
         }
+        applyAutoMarkRead(save: false)
         prune()
         if context.hasChanges { try? context.save() }
         await fillMissingImages(added)
@@ -125,7 +122,9 @@ final class FeedStore {
         if feed.siteURL == nil, let site = parsed.siteURL { feed.siteURL = site }
         var known = Set(feed.articles.map(\.key))
         let base = URL(string: feed.siteURL ?? feed.url)
-        let cutoff = Date.now.addingTimeInterval(-retention)
+        // On n'importe pas les articles plus vieux que la durée de conservation
+        let cutoff = Prefs.retentionCutoff
+        let autoReadCutoff = Prefs.autoMarkReadCutoff
         var added: [Article] = []
 
         for item in parsed.items.prefix(200) {
@@ -155,6 +154,9 @@ final class FeedStore {
                 author: item.author.map(HTMLUtils.plainText),
                 published: item.published ?? .now
             )
+            if let autoReadCutoff, article.published < autoReadCutoff, !article.isStarred {
+                article.isRead = true
+            }
             context.insert(article)
             article.feed = feed
             added.append(article)
@@ -243,10 +245,11 @@ final class FeedStore {
         try? context.save()
     }
 
-    func rename(_ folder: Folder, to name: String) {
+    func update(_ folder: Folder, name: String, symbol: String?, colorName: String?) {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return }
-        folder.name = trimmed
+        if !trimmed.isEmpty { folder.name = trimmed }
+        folder.symbol = (symbol == "folder") ? nil : symbol
+        folder.colorName = colorName
         try? context.save()
     }
 
@@ -273,8 +276,19 @@ final class FeedStore {
         try? context.save()
     }
 
+    /// Réglage « marquer automatiquement comme lus les articles de plus de X jours »
+    /// (les favoris ne sont pas concernés)
+    func applyAutoMarkRead(save: Bool = true) {
+        guard let cutoff = Prefs.autoMarkReadCutoff else { return }
+        let predicate = #Predicate<Article> { !$0.isRead && !$0.isStarred && $0.published < cutoff }
+        for article in (try? context.fetch(FetchDescriptor(predicate: predicate))) ?? [] {
+            article.isRead = true
+        }
+        if save, context.hasChanges { try? context.save() }
+    }
+
     private func prune() {
-        let cutoff = Date.now.addingTimeInterval(-retention)
+        let cutoff = Prefs.retentionCutoff
         let predicate = #Predicate<Article> { $0.isRead && !$0.isStarred && $0.published < cutoff }
         for article in (try? context.fetch(FetchDescriptor(predicate: predicate))) ?? [] {
             context.delete(article)

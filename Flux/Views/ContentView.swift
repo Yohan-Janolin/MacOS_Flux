@@ -9,6 +9,7 @@ struct ContentView: View {
     @State private var selectedKey: String?
     @State private var showAddFeed = false
     @State private var showNewFolder = false
+    @AppStorage(Prefs.refreshMinutes) private var refreshMinutes = 30
 
     /// Observé pour que la liste se mette à jour quand on déplace un flux de dossier
     @Query private var feeds: [Feed]
@@ -100,10 +101,13 @@ struct ContentView: View {
             }
         }
         .task {
-            // Actualisation au lancement, puis toutes les 30 minutes
+            // Actualisation au lancement
             await store.refreshAll()
+        }
+        .task(id: refreshMinutes) {
+            // Puis à intervalle régulier ; la boucle redémarre si le réglage change
             while !Task.isCancelled {
-                try? await Task.sleep(for: .seconds(30 * 60))
+                try? await Task.sleep(for: .seconds(Double(max(refreshMinutes, 5)) * 60))
                 guard !Task.isCancelled else { break }
                 await store.refreshAll()
             }
