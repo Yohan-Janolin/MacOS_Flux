@@ -11,6 +11,7 @@ struct SettingsView: View {
 
     @State private var language = AppLanguage.current
     @State private var languageChanged = false
+    @State private var askRelaunch = false
 
     var body: some View {
         Form {
@@ -90,6 +91,14 @@ struct SettingsView: View {
         .onChange(of: language) {
             AppLanguage.set(language)
             languageChanged = true
+            askRelaunch = true
+        }
+        .alert("Relancer Flux maintenant ?", isPresented: $askRelaunch) {
+            Button("Relancer") { AppLanguage.relaunch() }
+                .keyboardShortcut(.defaultAction)
+            Button("Plus tard", role: .cancel) {}
+        } message: {
+            Text("La nouvelle langue sera appliquée au redémarrage de l'app.")
         }
         .onChange(of: autoMarkReadEnabled) { store.applyAutoMarkRead() }
         .onChange(of: autoMarkReadDays) { store.applyAutoMarkRead() }

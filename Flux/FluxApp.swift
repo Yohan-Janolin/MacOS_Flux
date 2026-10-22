@@ -37,7 +37,7 @@ struct FluxApp: App {
                 .environment(store)
                 .environment(ui)
                 .environment(keyboard)
-                .frame(minWidth: 900, minHeight: 560)
+                .frame(minWidth: 1000, minHeight: 560)
         }
         .defaultSize(width: 1280, height: 820)
         .modelContainer(container)

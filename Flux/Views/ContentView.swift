@@ -1,3 +1,4 @@
+import AppKit
 import UniformTypeIdentifiers
 import SwiftData
 import SwiftUI
@@ -14,6 +15,10 @@ struct ContentView: View {
     @State private var showNewFolder = false
     @State private var searchText = ""
     @State private var importMessage: String?
+
+    /// Largeur de la liste d'articles, mémorisée d'un lancement à l'autre
+    @AppStorage("articleListWidth") private var listWidth: Double = 400
+    static let listWidthRange: ClosedRange<Double> = 300...700
     @AppStorage(Prefs.refreshMinutes) private var refreshMinutes = 30
 
     /// Observé pour que la liste se mette à jour quand on déplace un flux de dossier
@@ -41,24 +46,35 @@ struct ContentView: View {
     }
 
     var body: some View {
+        // Deux colonnes seulement pour NavigationSplitView (barre latérale | reste) :
+        // en trois colonnes, macOS ignore la largeur voulue de la liste au lancement
+        // et ne la mémorise pas. La liste et l'article sont donc côte à côte dans la
+        // colonne de détail, avec une largeur de liste enregistrée dans les réglages.
         NavigationSplitView {
             SidebarView(selection: $filter, showNewFolder: $showNewFolder)
-        } content: {
-            ArticleListView(
-                filter: filter ?? .all,
-                selection: $selectedKey,
-                folderFeedURLs: folderFeedURLs,
-                searchText: searchText.trimmingCharacters(in: .whitespaces)
-            )
-            .navigationSplitViewColumnWidth(min: 320, ideal: 400)
-            .searchable(text: $searchText, placement: .toolbar, prompt: Text("Rechercher"))
         } detail: {
-            if let article = selectedArticle {
-                ArticleDetailView(article: article)
-                    .id(article.key)
-            } else {
-                ContentUnavailableView("Aucun article sélectionné", systemImage: "newspaper")
+            HStack(spacing: 0) {
+                ArticleListView(
+                    filter: filter ?? .all,
+                    selection: $selectedKey,
+                    folderFeedURLs: folderFeedURLs,
+                    searchText: searchText.trimmingCharacters(in: .whitespaces)
+                )
+                .frame(width: listWidth)
+
+                ColumnResizer(width: $listWidth, range: Self.listWidthRange)
+
+                Group {
+                    if let article = selectedArticle {
+                        ArticleDetailView(article: article)
+                            .id(article.key)
+                    } else {
+                        ContentUnavailableView("Aucun article sélectionné", systemImage: "newspaper")
+                    }
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
+            .searchable(text: $searchText, placement: .toolbar, prompt: Text("Rechercher"))
         }
         .toolbar {
             ToolbarItemGroup(placement: .navigation) {
@@ -170,3 +186,41 @@ struct ContentView: View {
         }
     }
 }
+
+/// Séparateur vertical qu'on peut faire glisser pour redimensionner la colonne de gauche.
+struct ColumnResizer: View {
+    @Binding var width: Double
+    let range: ClosedRange<Double>
+
+    @State private var startWidth: Double?
+
+    var body: some View {
+        Rectangle()
+            .fill(Color(nsColor: .separatorColor))
+            .frame(width: 1)
+            .frame(maxHeight: .infinity)
+            .overlay {
+                // Zone de prise plus large que le trait, sans prendre de place dans la mise en page
+                Color.clear
+                    .frame(width: 9)
+                    .contentShape(Rectangle())
+                    .onHover { inside in
+                        if inside { NSCursor.resizeLeftRight.push() } else { NSCursor.pop() }
+                    }
+                    .gesture(
+                        DragGesture(minimumDistance: 1, coordinateSpace: .global)
+                            .onChanged { value in
+                                let start = startWidth ?? width
+                                startWidth = start
+                                width = min(max(start + value.translation.width, range.lowerBound), range.upperBound)
+                            }
+                            .onEnded { _ in startWidth = nil }
+                    )
+            }
+            .onAppear {
+                // Au cas où une valeur enregistrée sortirait des bornes
+                width = min(max(width, range.lowerBound), range.upperBound)
+            }
+    }
+}
+

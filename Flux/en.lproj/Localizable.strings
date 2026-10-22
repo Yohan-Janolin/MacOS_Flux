@@ -68,6 +68,7 @@
 "Indigo" = "Indigo";
 "Jaune" = "Yellow";
 "La nouvelle langue s'appliquera au prochain lancement." = "The new language will apply the next time Flux launches.";
+"La nouvelle langue sera appliquée au redémarrage de l'app." = "The new language will be applied when the app restarts.";
 "Langue du système" = "System Language";
 "Langue" = "Language";
 "Le serveur a répondu avec l'erreur %lld." = "The server responded with error %lld.";
@@ -88,9 +89,12 @@
 "Ouvrir dans le navigateur" = "Open in Browser";
 "Ouvrir le site" = "Open Website";
 "Personnaliser…" = "Customize…";
+"Plus tard" = "Later";
 "Readability.js" = "Readability.js";
 "Rechercher" = "Search";
+"Relancer Flux maintenant ?" = "Relaunch Flux now?";
 "Relancer Flux" = "Relaunch Flux";
+"Relancer" = "Relaunch";
 "Retirer des favoris" = "Remove from Favorites";
 "Rose" = "Pink";
 "Rouge" = "Red";
