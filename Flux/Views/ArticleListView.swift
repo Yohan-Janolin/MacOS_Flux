@@ -37,20 +37,84 @@ struct ArticleListView: View {
         _articles = Query(descriptor)
     }
 
+    /// Hauteur fixe de chaque ligne. Toutes les lignes faisant exactement la même
+    /// hauteur, la hauteur totale de la liste est connue d'avance : l'ascenseur
+    /// ne peut plus « trembler » pendant le défilement.
+    static let rowHeight: CGFloat = 100
+
+    @FocusState private var isFocused: Bool
+
+    // Une ScrollView + LazyVStack plutôt qu'une List : sur macOS, List estime la
+    // hauteur des lignes jamais affichées avec une valeur par défaut, puis la
+    // corrige au défilement, ce qui faisait sauter la liste en bas.
     var body: some View {
-        List(selection: $selection) {
-            ForEach(articles) { article in
-                ArticleRow(article: article)
-                    .tag(article.key)
-                    .contextMenu { menu(for: article) }
+        ScrollViewReader { proxy in
+            ScrollView {
+                LazyVStack(spacing: 0) {
+                    ForEach(articles) { article in
+                        row(for: article)
+                    }
+                }
+                .padding(.vertical, 6)
+            }
+            .focusable()
+            .focused($isFocused)
+            .focusEffectDisabled()
+            .onKeyPress(.downArrow) {
+                moveSelection(by: 1, proxy: proxy)
+                return .handled
+            }
+            .onKeyPress(.upArrow) {
+                moveSelection(by: -1, proxy: proxy)
+                return .handled
             }
         }
-        .listStyle(.inset)
         .overlay {
             if articles.isEmpty {
                 ContentUnavailableView(emptyTitle, systemImage: "tray")
             }
         }
+    }
+
+    private func row(for article: Article) -> some View {
+        let isSelected = selection == article.key
+        return ArticleRow(article: article)
+            .padding(.horizontal, 10)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(height: Self.rowHeight)
+            .background {
+                if isSelected {
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(Color.accentColor.opacity(isFocused ? 0.22 : 0.12))
+                }
+            }
+            .overlay(alignment: .bottom) {
+                if !isSelected {
+                    Divider().padding(.leading, 114).padding(.trailing, 10)
+                }
+            }
+            .padding(.horizontal, 8)
+            .contentShape(Rectangle())
+            .onTapGesture {
+                selection = article.key
+                isFocused = true
+            }
+            .contextMenu { menu(for: article) }
+            .id(article.key)
+    }
+
+    /// Flèches ↑ / ↓ : article précédent / suivant
+    private func moveSelection(by delta: Int, proxy: ScrollViewProxy) {
+        guard !articles.isEmpty else { return }
+        let next: Int
+        if let current = articles.firstIndex(where: { $0.key == selection }) {
+            next = min(max(current + delta, 0), articles.count - 1)
+        } else {
+            next = 0
+        }
+        let key = articles[next].key
+        selection = key
+        proxy.scrollTo(key)   // sans ancre : défile juste assez pour rendre la ligne visible
     }
 
     private var emptyTitle: String {
@@ -104,9 +168,7 @@ struct ArticleRow: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
-                // Hauteur réservée même si le texte est plus court : toutes les lignes
-                // de la liste ont la même hauteur, ce qui évite que la liste « tremble »
-                // quand macOS corrige la hauteur estimée des lignes pas encore affichées.
+                // Hauteur réservée même si le texte est plus court
                 Text(article.title)
                     .font(.system(size: 14, weight: article.isRead ? .regular : .semibold))
                     .foregroundStyle(article.isRead ? .secondary : .primary)
@@ -118,7 +180,6 @@ struct ArticleRow: View {
                     .lineLimit(2, reservesSpace: true)
             }
         }
-        .padding(.vertical, 6)
     }
 }
 
