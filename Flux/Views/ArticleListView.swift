@@ -114,11 +114,11 @@ struct ArticleListView: View {
             .focusable()
             .focused($isFocused)
             .focusEffectDisabled()
-            .onKeyPress(.downArrow) { press in
+            .onKeyPress(.downArrow, phases: [.down, .repeat]) { press in
                 moveSelection(by: 1, extend: press.modifiers.contains(.shift), proxy: proxy)
                 return .handled
             }
-            .onKeyPress(.upArrow) { press in
+            .onKeyPress(.upArrow, phases: [.down, .repeat]) { press in
                 moveSelection(by: -1, extend: press.modifiers.contains(.shift), proxy: proxy)
                 return .handled
             }
