@@ -43,7 +43,7 @@ Flux is a native SwiftUI app, available in English and French, in light and dark
 - **Folders** (⇧⌘N), collapsible, with their own unread count, color and icon (right-click › Customize…). Drag a feed onto a folder to file it.
 - **Rename a feed** (right-click › Rename…) when its name is too long. The original name is kept, so you can go back to it.
 - **OPML import and export** (File menu, ⇧⌘I / ⇧⌘E) to bring your subscriptions from another reader (NetNewsWire, Reeder, Feedly…) with their folders, or to back them up.
-- **Limitations:** RSS 2.0, RSS 1.0 (RDF) and Atom feeds are supported; JSON Feed isn't yet. Nested folders in an OPML file are flattened to their closest folder.
+- **Limitations:** nested folders in an OPML file are flattened to their closest folder.
 
 ### 🖼️ A list you enjoy browsing
 
@@ -98,7 +98,7 @@ Appearance (automatic, light, dark), language (system, English, French), summary
 
 **macOS 14 (Sonoma) or later**, on Apple Silicon and Intel Macs.
 
-Feed formats: **RSS 2.0**, **RSS 1.0 (RDF)** and **Atom**, served over `https` or `http`. JSON Feed isn't supported yet.
+Feed formats: **RSS 2.0**, **RSS 1.0 (RDF)**, **Atom** and **JSON Feed**, served over `https` or `http`.
 
 ## 🔐 Required permissions
 

@@ -43,7 +43,7 @@ Flux est une app SwiftUI native, en français et en anglais, en mode clair et so
 - **Dossiers** (⇧⌘N), repliables, avec leur propre total de non-lus, leur couleur et leur icône (clic droit › Personnaliser…). Glisse un flux sur un dossier pour l'y ranger.
 - **Renommer un flux** (clic droit › Renommer…) quand son nom est à rallonge. Le nom d'origine est conservé, tu peux y revenir.
 - **Import et export OPML** (menu Fichier, ⇧⌘I / ⇧⌘E) pour reprendre tes abonnements depuis un autre lecteur (NetNewsWire, Reeder, Feedly…) avec leurs dossiers, ou pour les sauvegarder.
-- **Limites :** les flux RSS 2.0, RSS 1.0 (RDF) et Atom sont pris en charge ; JSON Feed ne l'est pas encore. Les dossiers imbriqués d'un fichier OPML sont ramenés au dossier le plus proche.
+- **Limites :** les dossiers imbriqués d'un fichier OPML sont ramenés au dossier le plus proche.
 
 ### 🖼️ Une liste agréable à parcourir
 
@@ -98,7 +98,7 @@ Apparence (automatique, clair, sombre), langue (système, français, anglais), r
 
 **macOS 14 (Sonoma) ou plus récent**, sur Mac Apple Silicon et Intel.
 
-Formats de flux : **RSS 2.0**, **RSS 1.0 (RDF)** et **Atom**, servis en `https` ou en `http`. JSON Feed n'est pas encore pris en charge.
+Formats de flux : **RSS 2.0**, **RSS 1.0 (RDF)**, **Atom** et **JSON Feed**, servis en `https` ou en `http`.
 
 ## 🔐 Autorisations nécessaires
 

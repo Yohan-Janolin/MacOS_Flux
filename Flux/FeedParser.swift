@@ -24,7 +24,12 @@ final class FeedParser: NSObject, XMLParserDelegate {
     private var buffers: [String] = []
     private var sawRoot = false
 
+    /// RSS, Atom ou JSON Feed (détecté automatiquement)
     static func parse(_ data: Data) -> ParsedFeed? {
+        if let first = data.first(where: { !($0 == 0x20 || $0 == 0x0A || $0 == 0x0D || $0 == 0x09 || $0 == 0xEF || $0 == 0xBB || $0 == 0xBF) }),
+           first == UInt8(ascii: "{") {
+            return JSONFeedParser.parse(data)
+        }
         let delegate = FeedParser()
         let parser = XMLParser(data: data)
         parser.delegate = delegate
@@ -177,3 +182,83 @@ enum DateParser {
         return nil
     }
 }
+
+/// JSON Feed 1.0 / 1.1 (https://www.jsonfeed.org)
+enum JSONFeedParser {
+    private struct Feed: Decodable {
+        var version: String?
+        var title: String?
+        var home_page_url: String?
+        var items: [Item]?
+    }
+
+    private struct Author: Decodable {
+        var name: String?
+    }
+
+    private struct Attachment: Decodable {
+        var url: String?
+        var mime_type: String?
+    }
+
+    private struct Item: Decodable {
+        var id: LossyString?
+        var url: String?
+        var external_url: String?
+        var title: String?
+        var content_html: String?
+        var content_text: String?
+        var summary: String?
+        var image: String?
+        var banner_image: String?
+        var date_published: String?
+        var date_modified: String?
+        var author: Author?
+        var authors: [Author]?
+        var attachments: [Attachment]?
+    }
+
+    /// Certains flux mettent un nombre dans "id" au lieu d'une chaîne
+    private struct LossyString: Decodable {
+        var value: String
+        init(from decoder: Decoder) throws {
+            let c = try decoder.singleValueContainer()
+            if let s = try? c.decode(String.self) { value = s }
+            else if let i = try? c.decode(Int.self) { value = String(i) }
+            else if let d = try? c.decode(Double.self) { value = String(d) }
+            else { value = "" }
+        }
+    }
+
+    static func parse(_ data: Data) -> ParsedFeed? {
+        guard let feed = try? JSONDecoder().decode(Feed.self, from: data),
+              feed.version?.contains("jsonfeed.org") == true || feed.items != nil else { return nil }
+
+        var result = ParsedFeed(title: feed.title, siteURL: feed.home_page_url)
+        for item in feed.items ?? [] {
+            // Texte brut seul : on l'habille en paragraphes HTML
+            let textAsHTML = item.content_text.map { text in
+                text.components(separatedBy: "\n\n")
+                    .map { "<p>\(HTMLUtils.escape($0).replacingOccurrences(of: "\n", with: "<br>"))</p>" }
+                    .joined()
+            }
+            let imageAttachment = item.attachments?.first { ($0.mime_type ?? "").hasPrefix("image") }?.url
+            result.items.append(ParsedItem(
+                guid: item.id?.value.isEmpty == false ? item.id?.value : nil,
+                title: item.title,
+                link: item.url ?? item.external_url,
+                summaryHTML: item.summary,
+                contentHTML: item.content_html ?? textAsHTML,
+                imageURL: item.image ?? item.banner_image ?? imageAttachment,
+                author: item.authors?.compactMap(\.name).joined(separator: ", ").nilIfEmpty ?? item.author?.name,
+                published: (item.date_published ?? item.date_modified).flatMap(DateParser.parse)
+            ))
+        }
+        return result
+    }
+}
+
+private extension String {
+    var nilIfEmpty: String? { isEmpty ? nil : self }
+}
+

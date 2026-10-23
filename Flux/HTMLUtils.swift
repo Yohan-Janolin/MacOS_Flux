@@ -103,7 +103,7 @@ enum HTMLUtils {
         matches(linkTag, in: html).compactMap { tag in
             guard let rel = attribute("rel", in: tag)?.lowercased(), rel.contains("alternate"),
                   let type = attribute("type", in: tag)?.lowercased(),
-                  type.contains("rss") || type.contains("atom"),
+                  type.contains("rss") || type.contains("atom") || type.contains("feed+json"),
                   let href = attribute("href", in: tag),
                   let resolved = resolve(href, base: base) else { return nil }
             return URL(string: resolved)

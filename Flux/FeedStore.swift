@@ -51,7 +51,7 @@ final class FeedStore {
         for candidate in HTMLUtils.feedLinks(in: html, base: finalURL) {
             if let r = try? await Net.get(candidate), let parsed = FeedParser.parse(r.0) { return (r.1, parsed) }
         }
-        for path in ["/feed", "/rss", "/feed.xml", "/rss.xml", "/atom.xml", "/index.xml"] {
+        for path in ["/feed", "/rss", "/feed.xml", "/rss.xml", "/atom.xml", "/index.xml", "/feed.json"] {
             guard let candidate = URL(string: path, relativeTo: finalURL)?.absoluteURL else { continue }
             if let r = try? await Net.get(candidate), let parsed = FeedParser.parse(r.0) { return (r.1, parsed) }
         }

@@ -26,7 +26,7 @@ enum Net {
         config.timeoutIntervalForRequest = 20
         config.httpAdditionalHeaders = [
             "User-Agent": userAgent,
-            "Accept": "application/rss+xml, application/atom+xml, application/xml, text/xml, text/html;q=0.9, */*;q=0.8",
+            "Accept": "application/rss+xml, application/atom+xml, application/feed+json, application/xml, text/xml, application/json;q=0.9, text/html;q=0.9, */*;q=0.8",
             "Accept-Language": "fr-FR,fr;q=0.9,en;q=0.8",
         ]
         return URLSession(configuration: config)
