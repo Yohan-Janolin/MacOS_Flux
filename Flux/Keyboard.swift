@@ -19,7 +19,7 @@ enum KeyCommand: Equatable {
 
 /// Intercepte les touches de la fenêtre principale et les transmet à la liste
 /// d'articles. Les touches sont laissées tranquilles quand on tape dans un champ
-/// de texte, quand une feuille est ouverte, ou avec ⌘ / ⌃ / ⌥.
+/// de texte, quand une feuille est ouverte, ou avec ⌘ / ⌃ / ⌥ (sauf ⌘A et ⌘=).
 @MainActor
 @Observable
 final class KeyboardRouter {
@@ -56,6 +56,14 @@ final class KeyboardRouter {
            event.modifierFlags.intersection([.command, .control, .option]) == .command,
            event.charactersIgnoringModifiers?.lowercased() == "a" {
             self.event = Event(command: .selectAll)
+            return true
+        }
+        // ⌘= : agrandir le texte sans Maj (sur un clavier AZERTY, ⌘+ demande Maj+=)
+        if event.modifierFlags.intersection([.command, .control, .option, .shift]) == .command,
+           event.charactersIgnoringModifiers == "=" {
+            let defaults = UserDefaults.standard
+            let size = defaults.integer(forKey: Prefs.readerFontSize)
+            defaults.set(min(size + 1, Prefs.readerFontSizes.upperBound), forKey: Prefs.readerFontSize)
             return true
         }
         guard event.modifierFlags.intersection([.command, .control, .option]).isEmpty else { return false }

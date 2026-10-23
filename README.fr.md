@@ -88,7 +88,7 @@ Des règles (Réglages › Filtres) excluent les articles selon un mot-clé dans
 | ⌘N / ⇧⌘N | Ajouter un flux / nouveau dossier |
 | ⌘R | Actualiser |
 | ⇧⌘K | Tout marquer comme lu (vue en cours) |
-| ⌘+ / ⌘− / ⌘0 | Agrandir / réduire / taille par défaut du texte |
+| ⌘+ (ou ⌘=) / ⌘− / ⌘0 | Agrandir / réduire / taille par défaut du texte |
 | ⌥⌘S | Statistiques de lecture |
 | ⌘, | Réglages |
 

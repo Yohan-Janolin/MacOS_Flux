@@ -86,7 +86,7 @@ struct ArticleDetailView: View {
                     } label: {
                         Label("Texte", systemImage: "textformat.size")
                     }
-                    .help("Taille et largeur du texte (⌘+ / ⌘−)")
+                    .help("Taille et largeur du texte (⌘+ ou ⌘= / ⌘−)")
                 }
                 ToolbarItemGroup {
                     Button {

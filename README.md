@@ -88,7 +88,7 @@ Rules (Settings › Filters) exclude articles by a keyword in their title, ignor
 | ⌘N / ⇧⌘N | Add a feed / new folder |
 | ⌘R | Refresh |
 | ⇧⌘K | Mark all as read (current view) |
-| ⌘+ / ⌘− / ⌘0 | Bigger / smaller / default text size |
+| ⌘+ (or ⌘=) / ⌘− / ⌘0 | Bigger / smaller / default text size |
 | ⌥⌘S | Reading statistics |
 | ⌘, | Settings |
 
