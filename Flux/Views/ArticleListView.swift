@@ -41,6 +41,8 @@ struct ArticleListView: View {
                 predicate = #Predicate { !$0.isHidden && (!$0.isRead || sticky.contains($0.key)) }
             case .starred:
                 predicate = #Predicate { $0.isStarred }
+            case .history:
+                predicate = #Predicate { $0.openedAt != nil }
             case .feed(let url):
                 predicate = #Predicate { !$0.isHidden && $0.feedURL == url }
             case .folder:
@@ -64,6 +66,11 @@ struct ArticleListView: View {
                     $0.isStarred
                         && ($0.title.localizedStandardContains(q) || $0.searchText.localizedStandardContains(q))
                 }
+            case .history:
+                predicate = #Predicate {
+                    $0.openedAt != nil
+                        && ($0.title.localizedStandardContains(q) || $0.searchText.localizedStandardContains(q))
+                }
             case .feed(let url):
                 predicate = #Predicate {
                     !$0.isHidden && $0.feedURL == url
@@ -78,7 +85,10 @@ struct ArticleListView: View {
         }
         var descriptor = FetchDescriptor<Article>(
             predicate: predicate,
-            sortBy: [SortDescriptor(\.published, order: .reverse)]
+            // Historique : dernier article ouvert en premier
+            sortBy: filter == .history
+                ? [SortDescriptor<Article>(\.openedAt, order: .reverse)]
+                : [SortDescriptor<Article>(\.published, order: .reverse)]
         )
         descriptor.fetchLimit = 1000
         // Pas d'animation : une mise à jour animée pendant le défilement fait sauter la liste
@@ -323,6 +333,7 @@ struct ArticleListView: View {
         switch filter {
         case .unread: return String(localized: "Tout est lu")
         case .starred: return String(localized: "Aucun favori")
+        case .history: return String(localized: "Aucun article ouvert pour l'instant")
         default: return String(localized: "Aucun article")
         }
     }

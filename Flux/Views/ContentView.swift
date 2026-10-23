@@ -29,6 +29,13 @@ struct ContentView: View {
     /// Article ouvert par-dessus la grille (mode vignettes plein écran)
     @State private var articleOpen = false
 
+    /// Article affiché en ce moment et depuis quand (temps de lecture pour les statistiques)
+    @State private var viewing: (key: String, since: Date)?
+
+    private var readTrigger: ReadTrigger {
+        ReadTrigger(key: selectedKeys.count == 1 ? selectedKeys.first : nil, visible: !immersiveGrid || articleOpen)
+    }
+
     private var showsArticleOverGrid: Bool { immersiveGrid && articleOpen && selectedArticle != nil }
 
     /// Observé pour que la liste se mette à jour quand on déplace un flux de dossier
@@ -236,8 +243,24 @@ struct ContentView: View {
             selectedKeys = []
             articleOpen = false
         }
-        .task(id: ReadTrigger(key: selectedKeys.count == 1 ? selectedKeys.first : nil,
-                              visible: !immersiveGrid || articleOpen)) {
+        .task(id: readTrigger) {
+            // Historique et statistiques : un article affiché 3 secondes compte comme ouvert
+            guard readTrigger.visible, let article = selectedArticle, article.openedAt == nil else { return }
+            try? await Task.sleep(for: .seconds(3))
+            guard !Task.isCancelled, !article.isDeleted else { return }
+            article.openedAt = .now
+        }
+        .onChange(of: readTrigger, initial: true) {
+            finishViewing()
+            if readTrigger.visible, let key = readTrigger.key { viewing = (key, .now) }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didResignActiveNotification)) { _ in
+            finishViewing()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            if readTrigger.visible, let key = readTrigger.key { viewing = (key, .now) }
+        }
+        .task(id: readTrigger) {
             // Marque comme lu l'article ouvert, selon le réglage (immédiatement, après un délai, ou jamais).
             // Changer d'article annule la tâche : un article survolé quelques secondes reste non lu.
             // En vignettes plein écran, une carte simplement sélectionnée n'est pas lue.
@@ -276,6 +299,20 @@ struct ContentView: View {
                 guard !Task.isCancelled else { break }
                 await store.refreshAll()
             }
+        }
+    }
+
+    /// Ajoute le temps passé sur l'article qu'on quitte (plafonné à 30 minutes par visite)
+    private func finishViewing() {
+        guard let current = viewing else { return }
+        viewing = nil
+        let elapsed = min(Date.now.timeIntervalSince(current.since), 30 * 60)
+        guard elapsed >= 1 else { return }
+        let key = current.key
+        var descriptor = FetchDescriptor<Article>(predicate: #Predicate { $0.key == key })
+        descriptor.fetchLimit = 1
+        if let article = try? context.fetch(descriptor).first {
+            article.readingSeconds += elapsed
         }
     }
 

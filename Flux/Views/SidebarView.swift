@@ -6,6 +6,8 @@ enum SidebarSelection: Hashable {
     case all
     case unread
     case starred
+    /// Articles déjà ouverts, du plus récent au plus ancien
+    case history
     case folder(String)   // Folder.uid
     case feed(String)     // Feed.url
 }
@@ -40,6 +42,8 @@ struct SidebarView: View {
                     .tag(SidebarSelection.unread)
                 Label("Favoris", systemImage: "star")
                     .tag(SidebarSelection.starred)
+                Label("Historique", systemImage: "clock.arrow.circlepath")
+                    .tag(SidebarSelection.history)
             }
 
             Section {

@@ -91,12 +91,14 @@ Quand elle est activée (Réglages › Hors ligne), Flux télécharge après cha
 - Le cache d'images a une taille maximale (de 250 Mo à 5 Go, 1 Go par défaut) ; les images les moins récemment utilisées sont supprimées en premier. Sa taille est affichée dans les réglages, avec un bouton pour le vider.
 - **Limites :** 25 images au maximum par article. La première préparation peut prendre quelques minutes si tu as beaucoup de non-lus.
 
-### ⭐ Favoris, articles lus et nettoyage
+### ⭐ Favoris, historique et nettoyage
 
 - Les **favoris** sont conservés indéfiniment, même lus, et ne sont jamais marqués comme lus automatiquement.
+- **Archive des favoris** (Réglages › Stockage, activée par défaut) : quand tu ajoutes un favori, l'article complet et ses images sont rangés dans une archive permanente, indépendante du cache hors ligne. Tu peux le relire même si le site le supprime, ou sans connexion. Retirer un favori libère sa place.
+- L'**Historique** (barre latérale) liste les articles que tu as ouverts, du plus récent au plus ancien, et la recherche y fonctionne aussi.
 - **Marquer les articles comme lus** immédiatement, après 5, 10 ou 30 secondes, ou jamais (Réglages › Lecture).
 - En option, **marquer comme lus les anciens articles** au-delà de 1 jour à 1 mois, avec un aperçu du nombre d'articles concernés avant d'appliquer.
-- Les articles lus qui ne sont pas en favoris sont **supprimés** après 2 semaines à 1 an (2 mois par défaut).
+- Les articles lus qui ne sont pas en favoris sont **supprimés** après 2 semaines à 1 an (2 mois par défaut), ou jamais.
 - **Limite :** supprimer un flux supprime aussi ses articles, favoris compris.
 
 ### ⚙️ Réglages
@@ -118,7 +120,8 @@ Aucune. Flux n'a besoin d'aucune autorisation particulière : il utilise seuleme
 Flux ne collecte rien et n'envoie rien te concernant. Pas de compte, pas de statistiques, pas de pistage. Les seules requêtes réseau vont directement aux sites auxquels tu es abonné : leurs flux, les pages de leurs articles, leurs images et leurs favicons. Tout est stocké sur ton Mac :
 
 - articles, flux et dossiers : `~/Library/Application Support/Flux/Flux.store` ;
-- cache d'images : `~/Library/Application Support/Flux/Images`.
+- cache d'images : `~/Library/Application Support/Flux/Images` ;
+- archive des favoris : `~/Library/Application Support/Flux/Archive`.
 
 ## 📥 Installation
 

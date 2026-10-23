@@ -169,6 +169,14 @@ final class Article {
     var isHidden: Bool = false
     /// Règle de filtrage (FilterRule.uid) qui a masqué ou marqué comme lu cet article
     var filteredBy: String?
+    /// Favori archivé : article complet et images rangés dans l'archive permanente
+    var isArchived: Bool = false
+    /// Première ouverture de l'article (historique et statistiques)
+    var openedAt: Date?
+    /// Temps total passé avec l'article affiché, en secondes
+    var readingSeconds: Double = 0
+    /// Nombre de mots du texte le plus complet disponible (temps de lecture estimé)
+    var wordCount: Int = 0
     var imageURL: String?
     var author: String?
     var published: Date
@@ -186,6 +194,7 @@ final class Article {
         self.contentHTML = contentHTML
         self.fullHTML = nil
         self.searchText = Article.makeSearchText(title: title, summary: summary, html: contentHTML)
+        self.wordCount = Article.countWords(contentHTML)
         self.imageURL = imageURL
         self.author = author
         self.published = published
@@ -205,6 +214,18 @@ extension Article {
 
     /// À appeler quand le contenu change (article complet récupéré)
     func updateSearchText() {
-        searchText = Article.makeSearchText(title: title, summary: summary, html: fullHTML ?? contentHTML)
+        let html = fullHTML ?? contentHTML
+        searchText = Article.makeSearchText(title: title, summary: summary, html: html)
+        wordCount = Article.countWords(html)
+    }
+
+    static func countWords(_ html: String?) -> Int {
+        HTMLUtils.plainText(html ?? "").split(whereSeparator: { $0.isWhitespace }).count
+    }
+
+    /// Temps de lecture estimé (230 mots par minute), en secondes
+    var estimatedReadingSeconds: Double {
+        let words = wordCount > 0 ? wordCount : Article.countWords(fullHTML ?? contentHTML)
+        return Double(words) / 230 * 60
     }
 }

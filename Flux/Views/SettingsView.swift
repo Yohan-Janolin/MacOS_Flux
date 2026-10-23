@@ -12,6 +12,9 @@ struct SettingsView: View {
     @AppStorage(Prefs.showSummary) private var showSummary = true
     @AppStorage(Prefs.readerWidth) private var readerWidth = "narrow"
     @AppStorage(Prefs.gridFullWidth) private var gridFullWidth = false
+    @AppStorage(Prefs.archiveFavorites) private var archiveFavorites = true
+    @State private var archiveSize: Int64?
+    @State private var pendingArchive = 0
     @AppStorage(Prefs.offlineEnabled) private var offlineEnabled = false
     @AppStorage(Prefs.imageCacheLimitMB) private var imageCacheLimitMB = 1024
     @State private var cacheSize: Int64?
@@ -170,6 +173,39 @@ struct SettingsView: View {
                 }
 
                 Section {
+                    Toggle("Archiver les favoris (article complet et images)", isOn: $archiveFavorites)
+                    HStack {
+                        Text("Taille de l'archive")
+                        Spacer()
+                        if let archiveSize {
+                            Text(archiveSize.formatted(.byteCount(style: .file)))
+                                .foregroundStyle(.secondary)
+                                .monospacedDigit()
+                        }
+                    }
+                    if let status = store.archiveStatus {
+                        HStack(spacing: 8) {
+                            ProgressView().controlSize(.small)
+                            Text(status).foregroundStyle(.secondary)
+                        }
+                    } else if archiveFavorites && pendingArchive > 0 {
+                        HStack {
+                            Text("\(pendingArchive) favoris pas encore archivés")
+                                .foregroundStyle(.secondary)
+                            Spacer()
+                            Button("Archiver maintenant") {
+                                Task { await store.archiveFavorites() }
+                            }
+                        }
+                    }
+                } header: {
+                    Text("Archive des favoris")
+                } footer: {
+                    Text("Quand tu ajoutes un favori, l'article complet et ses images sont rangés dans une archive permanente, indépendante du cache hors ligne : tu peux le relire même si le site le supprime. Retirer un favori libère sa place.")
+                        .foregroundStyle(.secondary)
+                }
+
+                Section {
                     Picker("Supprimer les articles lus après", selection: $retentionDays) {
                         Text("2 semaines").tag(14)
                         Text("1 mois").tag(30)
@@ -177,11 +213,12 @@ struct SettingsView: View {
                         Text("3 mois").tag(90)
                         Text("6 mois").tag(180)
                         Text("1 an").tag(365)
+                        Text("Jamais").tag(0)
                     }
                 } header: {
                     Text("Stockage")
                 } footer: {
-                    Text("Les articles non lus et les favoris sont toujours conservés.")
+                    Text("Les articles non lus et les favoris sont toujours conservés. Les articles lus restent retrouvables dans l'Historique et par la recherche jusqu'à leur suppression.")
                         .foregroundStyle(.secondary)
                 }
             }
@@ -205,6 +242,12 @@ struct SettingsView: View {
             Text("La nouvelle langue sera appliquée au redémarrage de l'app.")
         }
         .task { await updateCacheSize() }
+        .onChange(of: archiveFavorites) {
+            if archiveFavorites { Task { await store.archiveFavorites() } }
+        }
+        .onChange(of: store.archiveStatus) {
+            if store.archiveStatus == nil { Task { await updateCacheSize() } }
+        }
         .onChange(of: offlineEnabled) {
             if offlineEnabled { Task { await store.prepareOffline() } }
         }
@@ -234,6 +277,8 @@ struct SettingsView: View {
 
     private func updateCacheSize() async {
         cacheSize = await Task.detached { ImageCache.totalSize() }.value
+        archiveSize = await Task.detached { ImageCache.archiveSize() }.value
+        pendingArchive = store.pendingArchiveCount()
     }
 
     private func updateAffectedCount() {

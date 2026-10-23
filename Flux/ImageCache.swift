@@ -17,20 +17,42 @@ enum ImageCache {
         return dir
     }()
 
+    /// Archive permanente des images des favoris : jamais vidée automatiquement,
+    /// ni par la limite de taille, ni par le bouton « Vider » du cache
+    static let archiveDirectory: URL = {
+        let dir = URL.applicationSupportDirectory
+            .appending(path: "Flux", directoryHint: .isDirectory)
+            .appending(path: "Archive", directoryHint: .isDirectory)
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        return dir
+    }()
+
     /// Taille max d'une image téléchargée
     private static let maxImageBytes = 15 << 20
 
+    static func fileName(for url: URL) -> String {
+        SHA256.hash(data: Data(url.absoluteString.utf8)).map { String(format: "%02x", $0) }.joined()
+    }
+
     static func fileURL(for url: URL) -> URL {
-        let hash = SHA256.hash(data: Data(url.absoluteString.utf8)).map { String(format: "%02x", $0) }.joined()
-        return directory.appending(path: hash)
+        directory.appending(path: fileName(for: url))
+    }
+
+    static func archiveURL(for url: URL) -> URL {
+        archiveDirectory.appending(path: fileName(for: url))
+    }
+
+    static func isArchived(_ url: URL) -> Bool {
+        FileManager.default.fileExists(atPath: archiveURL(for: url).path)
     }
 
     static func isCached(_ url: URL) -> Bool {
-        FileManager.default.fileExists(atPath: fileURL(for: url).path)
+        isArchived(url) || FileManager.default.fileExists(atPath: fileURL(for: url).path)
     }
 
-    /// Image en cache (et la marque comme récemment utilisée)
+    /// Image en cache ou dans l'archive (et la marque comme récemment utilisée)
     static func cachedData(for url: URL) -> Data? {
+        if let data = try? Data(contentsOf: archiveURL(for: url)) { return data }
         let file = fileURL(for: url)
         guard let data = try? Data(contentsOf: file) else { return nil }
         try? FileManager.default.setAttributes([.modificationDate: Date.now], ofItemAtPath: file.path)
@@ -66,7 +88,39 @@ enum ImageCache {
         }
     }
 
+    /// Range une image dans l'archive permanente (depuis le cache, sinon téléchargée)
+    @discardableResult
+    static func archive(_ url: URL) async -> Bool {
+        if isArchived(url) { return true }
+        let cached = fileURL(for: url)
+        if FileManager.default.fileExists(atPath: cached.path) {
+            return (try? FileManager.default.moveItem(at: cached, to: archiveURL(for: url))) != nil
+        }
+        guard await download(url) != nil else { return false }
+        return (try? FileManager.default.moveItem(at: cached, to: archiveURL(for: url))) != nil
+    }
+
+    /// Sort de l'archive les images qui ne servent plus à aucun favori :
+    /// elles retournent dans le cache normal (et sa limite de taille)
+    static func pruneArchive(keeping urls: Set<URL>) {
+        let keep = Set(urls.map(fileName(for:)))
+        let files = (try? FileManager.default.contentsOfDirectory(at: archiveDirectory, includingPropertiesForKeys: nil)) ?? []
+        for file in files where !keep.contains(file.lastPathComponent) {
+            let destination = directory.appending(path: file.lastPathComponent)
+            try? FileManager.default.removeItem(at: destination)
+            try? FileManager.default.moveItem(at: file, to: destination)
+        }
+    }
+
+    static func archiveSize() -> Int64 {
+        size(of: archiveDirectory)
+    }
+
     static func totalSize() -> Int64 {
+        size(of: directory)
+    }
+
+    private static func size(of directory: URL) -> Int64 {
         let keys: [URLResourceKey] = [.fileSizeKey]
         let files = (try? FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: keys)) ?? []
         return files.reduce(0) { $0 + Int64((try? $1.resourceValues(forKeys: Set(keys)))?.fileSize ?? 0) }

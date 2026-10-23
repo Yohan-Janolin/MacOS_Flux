@@ -91,12 +91,14 @@ When enabled (Settings › Offline), after each refresh Flux downloads unread ar
 - The image cache has a size limit (250 MB to 5 GB, 1 GB by default); the least recently used images are removed first. Its size is shown in Settings, with a button to clear it.
 - **Limitations:** up to 25 images per article. The first preparation can take a few minutes if you have many unread articles.
 
-### ⭐ Favorites, read status and cleanup
+### ⭐ Favorites, history and cleanup
 
 - **Favorites** are kept forever, even once read, and are never marked as read automatically.
+- **Favorites archive** (Settings › Storage, on by default): when you add a favorite, the full article and its images are stored in a permanent archive, separate from the offline cache. You can read it again even if the site deletes it, or without a connection. Removing a favorite frees its space.
+- **History** (sidebar) lists the articles you've opened, most recent first, and search works there too.
 - **Mark articles as read** immediately, after 5, 10 or 30 seconds, or never (Settings › Reading).
 - Optionally **mark old articles as read** after 1 day to 1 month, with a preview of how many articles are affected before you apply.
-- Read articles that aren't favorites are **deleted** after 2 weeks to 1 year (2 months by default).
+- Read articles that aren't favorites are **deleted** after 2 weeks to 1 year (2 months by default), or never.
 - **Limitation:** deleting a feed also deletes its articles, favorites included.
 
 ### ⚙️ Settings
@@ -118,7 +120,8 @@ None. Flux needs no special permission: it only uses the network to download you
 Flux collects nothing and sends nothing about you. There is no account, no analytics and no tracking. The only network requests go directly to the sites you subscribe to: their feeds, the pages of their articles, their images and their favicons. Everything is stored on your Mac:
 
 - articles, feeds and folders: `~/Library/Application Support/Flux/Flux.store`;
-- image cache: `~/Library/Application Support/Flux/Images`.
+- image cache: `~/Library/Application Support/Flux/Images`;
+- favorites archive: `~/Library/Application Support/Flux/Archive`.
 
 ## 📥 Installation
 

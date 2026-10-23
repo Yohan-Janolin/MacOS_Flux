@@ -97,6 +97,7 @@ final class FeedStore {
         await fillMissingImages(added)
         // En tâche séparée : l'actualisation (et son indicateur) se termine sans attendre
         if Prefs.offline { Task { await prepareOffline() } }
+        if Prefs.archive { Task { await archiveFavorites() } }
 
         // Le cache d'images se remplit aussi en lisant normalement : on le garde sous la limite
         let limit = Prefs.imageCacheLimitBytes
@@ -255,6 +256,8 @@ final class FeedStore {
         case .folder(let uid):
             let urls = feedURLs(inFolder: uid)
             predicate = #Predicate { !$0.isRead && urls.contains($0.feedURL) }
+        case .history:
+            predicate = #Predicate { !$0.isRead && $0.openedAt != nil }
         case .all, .unread:
             predicate = #Predicate { !$0.isRead }
         }
@@ -270,8 +273,15 @@ final class FeedStore {
     }
 
     func setStarred(_ starred: Bool, _ articles: [Article]) {
-        for article in articles where article.isStarred != starred { article.isStarred = starred }
+        let changed = articles.filter { $0.isStarred != starred }
+        for article in changed { article.isStarred = starred }
         try? context.save()
+        guard !changed.isEmpty else { return }
+        if starred {
+            Task { await archiveFavorites(changed) }
+        } else {
+            unarchive(changed)
+        }
     }
 
     func articles(withKeys keys: Set<String>) -> [Article] {
@@ -367,6 +377,71 @@ final class FeedStore {
     func matchCount(of rule: FilterRule) -> Int {
         let uid = rule.uid
         return (try? context.fetchCount(FetchDescriptor<Article>(predicate: #Predicate { $0.filteredBy == uid }))) ?? 0
+    }
+
+    // MARK: - Archive des favoris
+
+    /// Progression de l'archivage des favoris (nil = rien en cours)
+    private(set) var archiveStatus: String?
+
+    /// Range dans l'archive permanente l'article complet et les images des favoris
+    /// (par défaut : tous les favoris pas encore archivés)
+    func archiveFavorites(_ articles: [Article]? = nil) async {
+        guard Prefs.archive, !isOffline, archiveStatus == nil else { return }
+        let targets = (articles ?? ((try? context.fetch(FetchDescriptor<Article>(
+            predicate: #Predicate { $0.isStarred && !$0.isArchived }))) ?? []))
+            .filter { $0.isStarred && !$0.isArchived }
+        guard !targets.isEmpty else { return }
+        archiveStatus = String(localized: "Archivage…")
+        defer { archiveStatus = nil }
+
+        for (index, article) in targets.enumerated() {
+            guard !article.isDeleted, article.isStarred, Prefs.archive, !isOffline else { continue }
+            archiveStatus = String(localized: "Favoris : \(index + 1) sur \(targets.count)")
+
+            // 1. Article complet, si le flux ne donne qu'un extrait
+            if article.fullHTML == nil, HTMLUtils.looksLikeExcerpt(article.contentHTML),
+               let link = article.link, let url = URL(string: link) {
+                do {
+                    if let content = try await FullTextLoader.load(url) {
+                        article.fullHTML = content
+                        article.updateSearchText()
+                    }
+                } catch {
+                    if let e = error as? URLError, Self.isOfflineError(e) { return }   // on réessaiera plus tard
+                }
+            }
+
+            // 2. Images (miniature + images du texte, 50 max)
+            let base = article.link.flatMap { URL(string: $0) }
+            var urls = Array(HTMLUtils.imageURLs(in: article.fullHTML ?? article.contentHTML ?? "", base: base).prefix(50))
+            if let thumb = article.imageURL.flatMap({ URL(string: $0) }) { urls.insert(thumb, at: 0) }
+            await withTaskGroup(of: Void.self) { group in
+                for url in urls {
+                    group.addTask { _ = await ImageCache.archive(url) }
+                }
+            }
+            article.isArchived = true
+            try? context.save()
+        }
+    }
+
+    /// Favoris retirés : leurs images quittent l'archive (retour dans le cache normal)
+    private func unarchive(_ articles: [Article]) {
+        for article in articles { article.isArchived = false }
+        try? context.save()
+        let favorites = (try? context.fetch(FetchDescriptor<Article>(predicate: #Predicate { $0.isStarred }))) ?? []
+        var keep = Set<URL>()
+        for article in favorites {
+            let base = article.link.flatMap { URL(string: $0) }
+            keep.formUnion(HTMLUtils.imageURLs(in: article.fullHTML ?? article.contentHTML ?? "", base: base).prefix(50))
+            if let thumb = article.imageURL.flatMap({ URL(string: $0) }) { keep.insert(thumb) }
+        }
+        Task.detached(priority: .utility) { ImageCache.pruneArchive(keeping: keep) }
+    }
+
+    func pendingArchiveCount() -> Int {
+        (try? context.fetchCount(FetchDescriptor<Article>(predicate: #Predicate { $0.isStarred && !$0.isArchived }))) ?? 0
     }
 
     // MARK: - Hors ligne

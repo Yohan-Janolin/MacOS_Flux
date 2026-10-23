@@ -22,6 +22,8 @@ enum Prefs {
     static let showSummary = "showSummary"
     /// En mode vignettes, la grille prend toute la place (l'article s'ouvre par-dessus)
     static let gridFullWidth = "gridFullWidth"
+    /// Archiver les favoris (article complet + images) dans un stockage permanent
+    static let archiveFavorites = "archiveFavorites"
 
     static let defaults: [String: Any] = [
         autoMarkReadEnabled: false,
@@ -35,6 +37,7 @@ enum Prefs {
         readerWidth: "narrow",
         showSummary: true,
         gridFullWidth: false,
+        archiveFavorites: true,
     ]
 
     static func register() {
@@ -55,10 +58,13 @@ enum Prefs {
         Int64(max(UserDefaults.standard.integer(forKey: imageCacheLimitMB), 100)) << 20
     }
 
-    /// Les articles lus (et non favoris) plus vieux que ça sont supprimés
+    static var archive: Bool { UserDefaults.standard.bool(forKey: archiveFavorites) }
+
+    /// Les articles lus (et non favoris) plus vieux que ça sont supprimés (0 = jamais)
     static var retentionCutoff: Date {
-        let days = max(UserDefaults.standard.integer(forKey: retentionDays), 7)
-        return Date.now.addingTimeInterval(-Double(days) * 86_400)
+        let days = UserDefaults.standard.integer(forKey: retentionDays)
+        guard days > 0 else { return .distantPast }
+        return Date.now.addingTimeInterval(-Double(max(days, 7)) * 86_400)
     }
 }
 

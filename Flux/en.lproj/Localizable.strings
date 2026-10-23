@@ -4,6 +4,7 @@
 "%lld articles non lus seront marqués comme lus." = "%lld unread articles will be marked as read.";
 "%lld articles sélectionnés" = "%lld articles selected";
 "%lld articles" = "%lld articles";
+"%lld favoris pas encore archivés" = "%lld favorites not archived yet";
 "%lld flux importés, %lld ignorés (déjà présents ou invalides)." = "%lld feeds imported, %lld skipped (already present or invalid).";
 "(Mozilla, Apache 2.0)" = "(Mozilla, Apache 2.0)";
 "(Sans titre)" = "(Untitled)";
@@ -45,6 +46,10 @@
 "Après 30 secondes" = "After 30 seconds";
 "Après 5 secondes" = "After 5 seconds";
 "Après chaque actualisation, les articles non lus et les favoris sont téléchargés en entier, images comprises. Quand le cache est plein, les images les moins récemment utilisées sont supprimées." = "After each refresh, unread articles and favorites are downloaded in full, images included. When the cache is full, the least recently used images are removed.";
+"Archivage…" = "Archiving…";
+"Archive des favoris" = "Favorites Archive";
+"Archiver les favoris (article complet et images)" = "Archive favorites (full article and images)";
+"Archiver maintenant" = "Archive Now";
 "Article complet" = "Full Article";
 "Articles : %lld sur %lld" = "Articles: %lld of %lld";
 "Articles publiés il y a plus de" = "Articles published more than";
@@ -52,6 +57,7 @@
 "Aucun abonnement trouvé dans ce fichier." = "No subscriptions found in this file.";
 "Aucun article actuel ne correspond." = "No current article matches.";
 "Aucun article non lu concerné pour l'instant." = "No unread articles affected for now.";
+"Aucun article ouvert pour l'instant" = "No articles opened yet";
 "Aucun article sélectionné" = "No Article Selected";
 "Aucun article" = "No Articles";
 "Aucun favori" = "No Favorites";
@@ -79,12 +85,14 @@
 "Exporter les abonnements (OPML)…" = "Export Subscriptions (OPML)…";
 "Extraction des articles :" = "Article extraction:";
 "Favori" = "Favorite";
+"Favoris : %lld sur %lld" = "Favorites: %lld of %lld";
 "Favoris" = "Favorites";
 "Filtres" = "Filters";
 "Flux concernés" = "Feeds";
 "Flux" = "Flux";
 "Gris" = "Gray";
 "Général" = "General";
+"Historique" = "History";
 "Hors dossier" = "No Folder";
 "Hors ligne" = "Offline";
 "Icône" = "Icon";
@@ -107,7 +115,7 @@
 "Largeur du texte" = "Text Width";
 "Le serveur a répondu avec l'erreur %lld." = "The server responded with error %lld.";
 "Lecture" = "Reading";
-"Les articles non lus et les favoris sont toujours conservés." = "Unread articles and favorites are always kept.";
+"Les articles non lus et les favoris sont toujours conservés. Les articles lus restent retrouvables dans l'Historique et par la recherche jusqu'à leur suppression." = "Unread articles and favorites are always kept. Read articles can be found in History and through search until they are deleted.";
 "Les règles portent sur le titre, sans tenir compte des majuscules ni des accents. Elles s'appliquent aux articles existants et à ceux qui arrivent. Les favoris ne sont jamais filtrés. Supprimer une règle fait réapparaître les articles qu'elle masquait." = "Rules apply to the title, ignoring case and accents. They apply to existing and incoming articles. Favorites are never filtered. Deleting a rule brings back the articles it was hiding.";
 "Liste" = "List";
 "Marquer automatiquement comme lus les anciens articles" = "Automatically mark old articles as read";
@@ -146,6 +154,7 @@
 "Préparer maintenant" = "Prepare Now";
 "Présentation de la liste : liste ou vignettes" = "Article list layout: list or thumbnails";
 "Présentation" = "View";
+"Quand tu ajoutes un favori, l'article complet et ses images sont rangés dans une archive permanente, indépendante du cache hors ligne : tu peux le relire même si le site le supprime. Retirer un favori libère sa place." = "When you add a favorite, the full article and its images are stored in a permanent archive, separate from the offline cache: you can read it again even if the site deletes it. Removing a favorite frees its space.";
 "Readability.js" = "Readability.js";
 "Rechercher" = "Search";
 "Relancer Flux maintenant ?" = "Relaunch Flux now?";
@@ -170,6 +179,7 @@
 "Supprimer le dossier" = "Delete Folder";
 "Supprimer le flux" = "Delete Feed";
 "Supprimer les articles lus après" = "Delete read articles after";
+"Taille de l'archive" = "Archive size";
 "Taille maximale du cache d'images" = "Maximum image cache size";
 "Tous les articles" = "All Articles";
 "Tous les flux" = "All Feeds";

@@ -5,6 +5,7 @@ struct ArticleDetailView: View {
     let article: Article
 
     @State private var showFull = false
+    @Environment(FeedStore.self) private var store
     @AppStorage(Prefs.readerWidth) private var readerWidth = "narrow"
     @State private var loading = false
     @State private var errorMessage: String?
@@ -69,7 +70,7 @@ struct ArticleDetailView: View {
                     .disabled(articleURL == nil || loading)
 
                     Button {
-                        article.isStarred.toggle()
+                        store.setStarred(!article.isStarred, [article])
                     } label: {
                         Label("Favori", systemImage: article.isStarred ? "star.fill" : "star")
                     }
