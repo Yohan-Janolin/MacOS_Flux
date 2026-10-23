@@ -161,6 +161,12 @@ struct SidebarView: View {
             .contextMenu {
                 Button("Tout marquer comme lu") { store.markAllRead(.feed(feed.url)) }
                 Button("Actualiser") { Task { await store.refresh(feed) } }
+                Button("Récupérer les articles plus anciens") {
+                    Task {
+                        let added = await store.fetchOlderArticles(for: feed)
+                        store.groupDuplicates(added)
+                    }
+                }
                 Button("Renommer…") {
                     feedName = feed.displayTitle
                     renamingFeed = feed

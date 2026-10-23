@@ -49,7 +49,7 @@ Flux est une app SwiftUI native, en français et en anglais, en mode clair et so
 
 - Vue **Liste** avec miniature, source, date, titre et résumé (masquable), ou vue **Vignettes** (une grille d'images avec le titre dessous). On passe de l'une à l'autre dans la barre d'outils.
 - Les miniatures viennent du flux (`media:thumbnail`, `enclosure`…), de la première image de l'article, ou en dernier recours de l'`og:image` de la page.
-- **Vignettes en plein écran** (Réglages › Affichage) : la grille prend toute la largeur, et un article s'ouvre à sa place, avec une flèche de retour (ou Échap). Entrée ouvre l'article sélectionné.
+- **Vignettes en plein écran** (troisième choix du sélecteur de présentation, dans la barre d'outils) : la grille prend toute la largeur, et un article s'ouvre à sa place, avec une flèche de retour (ou Échap). Entrée ouvre l'article sélectionné.
 - **Recherche** dans le titre et le texte complet des articles de la vue en cours.
 - **Sélection multiple** (⌘-clic, ⇧-clic, ⇧↑/↓, ⌘A) pour marquer d'un coup plusieurs articles comme lus, non lus ou favoris.
 

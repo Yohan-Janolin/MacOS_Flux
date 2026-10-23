@@ -109,7 +109,7 @@ struct ArticleListView: View {
     @AppStorage(Prefs.articleLayout) private var layout = "list"
     @State private var availableWidth: CGFloat = 400
 
-    private var isGrid: Bool { layout == "grid" }
+    private var isGrid: Bool { layout == "grid" || layout == "gridFull" }
 
     // Vignettes : largeur minimale d'une carte et espacements
     private static let cardMinWidth: CGFloat = 150

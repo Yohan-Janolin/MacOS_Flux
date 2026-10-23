@@ -11,7 +11,6 @@ struct SettingsView: View {
     @AppStorage(Prefs.markReadDelay) private var markReadDelay = 0
     @AppStorage(Prefs.showSummary) private var showSummary = true
     @AppStorage(Prefs.readerWidth) private var readerWidth = "narrow"
-    @AppStorage(Prefs.gridFullWidth) private var gridFullWidth = false
     @AppStorage(Prefs.archiveFavorites) private var archiveFavorites = true
     @AppStorage(Prefs.groupDuplicates) private var groupDuplicates = true
     @AppStorage(Prefs.duplicateSensitivity) private var duplicateSensitivity = 1
@@ -62,7 +61,6 @@ struct SettingsView: View {
 
                 Section("Affichage") {
                     Toggle("Afficher le résumé sous le titre (mode liste)", isOn: $showSummary)
-                    Toggle("Vignettes en plein écran (l'article s'ouvre à la place de la grille)", isOn: $gridFullWidth)
                     Picker("Largeur du texte de l'article", selection: $readerWidth) {
                         Text("Étroite").tag("narrow")
                         Text("Large").tag("wide")

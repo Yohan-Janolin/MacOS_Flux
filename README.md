@@ -49,7 +49,7 @@ Flux is a native SwiftUI app, available in English and French, in light and dark
 
 - **List** view with a thumbnail, the source, the date, the title and an optional summary, or **Thumbnails** view (a grid of images with the title underneath). Switch between them in the toolbar.
 - Thumbnails come from the feed (`media:thumbnail`, `enclosure`…), from the first image of the article, or as a last resort from the page's `og:image`.
-- **Full-width thumbnails** (Settings › Display): the grid takes the whole width, and an article opens in its place, with a back arrow (or Esc). Return opens the selected article.
+- **Full-width thumbnails** (third choice of the layout picker in the toolbar): the grid takes the whole width, and an article opens in its place, with a back arrow (or Esc). Return opens the selected article.
 - **Search** in the title and full text of the articles of the current view.
 - **Multiple selection** (⌘-click, ⇧-click, ⇧↑/↓, ⌘A) to mark several articles as read, unread or favorite at once.
 

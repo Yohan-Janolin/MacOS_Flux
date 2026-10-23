@@ -34,12 +34,43 @@ final class FeedStore {
         let feed = Feed(url: key, title: title, siteURL: parsed.siteURL)
         context.insert(feed)
         feed.folder = folder
-        let added = ingest(parsed, into: feed)
+        var added = ingest(parsed, into: feed)
         feed.lastRefreshed = .now
         try? context.save()
 
+        // Flux court (WordPress n'en publie souvent que 10, parfois 5) : on remonte les pages précédentes
+        if parsed.items.count < 20 {
+            added += await fetchOlderArticles(for: feed)
+        }
+        groupDuplicates(added)
         Task { await fillMissingImages(added) }
         return feed
+    }
+
+    /// Récupère les articles plus anciens d'un flux paginé (`?paged=2`, `?paged=3`… : WordPress
+    /// et la plupart des CMS). Les flux non paginés renvoient la même page : rien n'est ajouté.
+    @discardableResult
+    func fetchOlderArticles(for feed: Feed, maxPages: Int = 8) async -> [Article] {
+        guard let base = URLComponents(string: feed.url) else { return [] }
+        let cutoff = Prefs.retentionCutoff
+        var added: [Article] = []
+        for page in 2...max(2, maxPages) {
+            var components = base
+            var items = components.queryItems ?? []
+            items.removeAll { $0.name == "paged" }
+            items.append(URLQueryItem(name: "paged", value: String(page)))
+            components.queryItems = items
+            guard let url = components.url,
+                  case .success(let parsed) = await Self.fetchFeed(url.absoluteString),
+                  !parsed.items.isEmpty, !feed.isDeleted else { break }
+            let new = ingest(parsed, into: feed)
+            added += new
+            // Plus rien de nouveau (flux non paginé) ou on dépasse la durée de conservation : on s'arrête
+            let oldest = parsed.items.compactMap(\.published).min() ?? .distantPast
+            if new.isEmpty || oldest < cutoff { break }
+        }
+        if !added.isEmpty { try? context.save() }
+        return added
     }
 
     /// Accepte l'URL d'un flux, ou celle d'un site (détection automatique).

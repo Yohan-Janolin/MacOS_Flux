@@ -171,7 +171,7 @@
 "Préparation…" = "Preparing…";
 "Préparer les articles pour la lecture hors ligne" = "Prepare articles for offline reading";
 "Préparer maintenant" = "Prepare Now";
-"Présentation de la liste : liste ou vignettes" = "Article list layout: list or thumbnails";
+"Présentation : liste, vignettes, ou vignettes en plein écran (l'article s'ouvre à la place de la grille)" = "Layout: list, thumbnails, or full-width thumbnails (the article opens in place of the grid)";
 "Présentation" = "View";
 "Période" = "Period";
 "Quand plusieurs sources publient la même actualité à moins de 48 heures d'écart, un seul article apparaît, avec « +N » et la liste des autres sources. Le lire marque tout le groupe comme lu. Le regroupement se trompe parfois : clic droit › Séparer des articles similaires." = "When several sources publish the same story within 48 hours, only one article appears, with “+N” and the list of the other sources. Reading it marks the whole group as read. Grouping sometimes gets it wrong: right-click › Separate from Similar Articles.";
@@ -192,6 +192,7 @@
 "Règles" = "Rules";
 "Récupération de l'article complet…" = "Fetching the full article…";
 "Récupérer l'article complet depuis le site" = "Fetch the full article from the website";
+"Récupérer les articles plus anciens" = "Fetch Older Articles";
 "Réglages (⌘,)" = "Settings (⌘,)";
 "Réglages" = "Settings";
 "S'applique aux articles existants et à ceux qui arrivent. Les favoris ne sont jamais marqués automatiquement." = "Applies to existing and incoming articles. Favorites are never marked automatically.";
@@ -226,7 +227,7 @@
 "Version du flux" = "Feed Version";
 "Vert" = "Green";
 "Vider" = "Clear";
-"Vignettes en plein écran (l'article s'ouvre à la place de la grille)" = "Full-width thumbnails (the article opens in place of the grid)";
+"Vignettes en plein écran" = "Full-Width Thumbnails";
 "Vignettes" = "Thumbnails";
 "Violet" = "Purple";
 "articles lus en moyenne" = "articles read on average";

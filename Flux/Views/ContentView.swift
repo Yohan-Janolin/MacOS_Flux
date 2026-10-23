@@ -22,10 +22,8 @@ struct ContentView: View {
     @AppStorage(Prefs.articleLayout) private var articleLayout = "list"
     static let listWidthRange: ClosedRange<Double> = 300...700
     @AppStorage(Prefs.refreshMinutes) private var refreshMinutes = 30
-    @AppStorage(Prefs.gridFullWidth) private var gridFullWidth = false
-
     /// Vignettes en plein écran : la grille occupe liste + lecture, l'article s'ouvre par-dessus
-    private var immersiveGrid: Bool { articleLayout == "grid" && gridFullWidth }
+    private var immersiveGrid: Bool { articleLayout == "gridFull" }
     /// Article ouvert par-dessus la grille (mode vignettes plein écran)
     @State private var articleOpen = false
 
@@ -201,10 +199,11 @@ struct ContentView: View {
                 Picker("Présentation", selection: $articleLayout) {
                     Label("Liste", systemImage: "list.bullet").tag("list")
                     Label("Vignettes", systemImage: "square.grid.2x2").tag("grid")
+                    Label("Vignettes en plein écran", systemImage: "square.grid.3x3").tag("gridFull")
                 }
                 .pickerStyle(.segmented)
                 .labelStyle(.iconOnly)
-                .help("Présentation de la liste : liste ou vignettes")
+                .help("Présentation : liste, vignettes, ou vignettes en plein écran (l'article s'ouvre à la place de la grille)")
             }
 
             if store.isOffline {

@@ -10,7 +10,8 @@ enum Prefs {
     static let appearance = "appearance"
     /// Délai avant de marquer comme lu l'article ouvert, en secondes (0 = immédiatement, -1 = jamais)
     static let markReadDelay = "markReadDelay"
-    /// Présentation de la liste d'articles : "list" ou "grid"
+    /// Présentation de la liste d'articles : "list", "grid" ou "gridFull"
+    /// (vignettes en plein écran : la grille prend toute la place, l'article s'ouvre par-dessus)
     static let articleLayout = "articleLayout"
     /// Lecture hors ligne : télécharger articles complets et images des non lus et favoris
     static let offlineEnabled = "offlineEnabled"
@@ -20,7 +21,7 @@ enum Prefs {
     static let readerWidth = "readerWidth"
     /// Afficher le résumé sous le titre en mode liste
     static let showSummary = "showSummary"
-    /// En mode vignettes, la grille prend toute la place (l'article s'ouvre par-dessus)
+    /// Ancien réglage (remplacé par articleLayout = "gridFull"), lu une fois pour la migration
     static let gridFullWidth = "gridFullWidth"
     /// Archiver les favoris (article complet + images) dans un stockage permanent
     static let archiveFavorites = "archiveFavorites"
@@ -41,14 +42,21 @@ enum Prefs {
         imageCacheLimitMB: 1024,
         readerWidth: "narrow",
         showSummary: true,
-        gridFullWidth: false,
         archiveFavorites: true,
         groupDuplicates: true,
         duplicateSensitivity: 1,
     ]
 
     static func register() {
-        UserDefaults.standard.register(defaults: defaults)
+        let d = UserDefaults.standard
+        d.register(defaults: defaults)
+        // Migration : l'ancienne case « Vignettes en plein écran » devient un choix de présentation
+        if d.object(forKey: gridFullWidth) != nil {
+            if d.bool(forKey: gridFullWidth), d.string(forKey: articleLayout) == "grid" {
+                d.set("gridFull", forKey: articleLayout)
+            }
+            d.removeObject(forKey: gridFullWidth)
+        }
     }
 
     /// Date avant laquelle un article est automatiquement marqué comme lu (nil = option désactivée)
