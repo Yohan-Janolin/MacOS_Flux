@@ -63,7 +63,8 @@ final class FeedStore {
             guard let url = components.url,
                   case .success(let parsed) = await Self.fetchFeed(url.absoluteString),
                   !parsed.items.isEmpty, !feed.isDeleted else { break }
-            let new = ingest(parsed, into: feed)
+            // Pages d'archive : leur titre (« Page 8 - … ») ne doit pas remplacer celui du flux
+            let new = ingest(parsed, into: feed, updateFeedInfo: false)
             added += new
             // Plus rien de nouveau (flux non paginé) ou on dépasse la durée de conservation : on s'arrête
             let oldest = parsed.items.compactMap(\.published).min() ?? .distantPast
@@ -179,11 +180,13 @@ final class FeedStore {
     }
 
     /// Insère les nouveaux articles d'un flux, sans toucher à ceux déjà connus.
-    private func ingest(_ parsed: ParsedFeed, into feed: Feed) -> [Article] {
-        if feed.siteURL == nil, let site = parsed.siteURL { feed.siteURL = site }
-        // Le nom d'origine suit le flux ; un nom personnalisé (customTitle) reste prioritaire à l'affichage
-        if let fresh = parsed.title.map(HTMLUtils.plainText), !fresh.isEmpty, fresh != feed.title {
-            feed.title = fresh
+    private func ingest(_ parsed: ParsedFeed, into feed: Feed, updateFeedInfo: Bool = true) -> [Article] {
+        if updateFeedInfo {
+            if feed.siteURL == nil, let site = parsed.siteURL { feed.siteURL = site }
+            // Le nom d'origine suit le flux ; un nom personnalisé (customTitle) reste prioritaire à l'affichage
+            if let fresh = parsed.title.map(HTMLUtils.plainText), !fresh.isEmpty, fresh != feed.title {
+                feed.title = fresh
+            }
         }
         var known = Set(feed.articles.map(\.key))
         let base = URL(string: feed.siteURL ?? feed.url)
