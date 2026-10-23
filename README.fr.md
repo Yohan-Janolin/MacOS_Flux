@@ -5,7 +5,7 @@
 <h1 align="center">Flux</h1>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-0.1-FF6A3D" alt="Version 0.1" />
+  <img src="https://img.shields.io/badge/version-0.2-FF6A3D" alt="Version 0.2" />
   <img src="https://img.shields.io/badge/macOS-14%2B-1C1B33?logo=apple&logoColor=white" alt="macOS 14+" />
   <img src="https://img.shields.io/badge/Apple%20Silicon%20%26%20Intel-universelle-60A5FA" alt="App universelle" />
   <a href="LICENSE"><img src="https://img.shields.io/badge/licence-MIT-2DD4BF" alt="Licence MIT" /></a>
@@ -143,6 +143,9 @@ Flux ne collecte rien et n'envoie rien te concernant. Pas de compte, pas de stat
 Il n'y a pas encore de version à télécharger : pour l'instant, Flux se compile depuis les sources (voir plus bas). Ça prend deux minutes avec Xcode.
 
 ## 📝 Historique des versions
+
+### 0.2
+- Prise en charge de JSON Feed, vignettes en plein écran, filtres par mots-clés, archive des favoris et Historique, statistiques de lecture, regroupement des articles similaires de plusieurs sources, réglages en onglets.
 
 ### 0.1
 - Première version : flux et dossiers ajoutés à la main, vues liste et vignettes, lecture de l'article complet avec Readability, recherche, sélection multiple, raccourcis façon Reeder, lecture hors ligne, import/export OPML, réglages, français et anglais, mode clair et sombre.

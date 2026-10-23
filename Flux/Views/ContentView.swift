@@ -73,6 +73,10 @@ struct ContentView: View {
     }
 
     var body: some View {
+        lifecycle(readingTracking(dialogs(layout)))
+    }
+
+    private var layout: some View {
         // Deux colonnes seulement pour NavigationSplitView (barre latérale | reste) :
         // en trois colonnes, macOS ignore la largeur voulue de la liste au lancement
         // et ne la mémorise pas. La liste et l'article sont donc côte à côte dans la
@@ -133,7 +137,11 @@ struct ContentView: View {
             }
             .searchable(text: $searchText, placement: .toolbar, prompt: Text("Rechercher"))
         }
-        .toolbar {
+        .toolbar { toolbarContent }
+    }
+
+    @ToolbarContentBuilder
+    private var toolbarContent: some ToolbarContent {
             ToolbarItemGroup(placement: .navigation) {
                 Button {
                     showAddFeed = true
@@ -214,7 +222,11 @@ struct ContentView: View {
                 }
                 .help("Réglages (⌘,)")
             }
-        }
+    }
+
+    /// Import / export OPML, messages, feuille d'ajout
+    private func dialogs<V: View>(_ content: V) -> some View {
+        content
         .fileImporter(
             isPresented: Binding(get: { ui.showOPMLImport }, set: { ui.showOPMLImport = $0 }),
             allowedContentTypes: [.opml, .xml]
@@ -239,6 +251,11 @@ struct ContentView: View {
         .sheet(isPresented: $showAddFeed) {
             AddFeedSheet(initialFolderUID: currentFolderUID)
         }
+    }
+
+    /// Historique, temps de lecture et marquage comme lu de l'article affiché
+    private func readingTracking<V: View>(_ content: V) -> some View {
+        content
         .onChange(of: filter) {
             selectedKeys = []
             articleOpen = false
@@ -274,6 +291,11 @@ struct ContentView: View {
             }
             store.setRead(true, [article])   // avec les articles similaires des autres sources
         }
+    }
+
+    /// Clavier, fenêtre, actualisations automatiques
+    private func lifecycle<V: View>(_ content: V) -> some View {
+        content
         .onChange(of: keyboard.event) { _, event in
             if event?.command == .back { articleOpen = false }
         }
