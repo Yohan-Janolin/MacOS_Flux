@@ -80,6 +80,7 @@ Rules (Settings › Filters) exclude articles by a keyword in their title, ignor
 | ⌘N / ⇧⌘N | Add a feed / new folder |
 | ⌘R | Refresh |
 | ⇧⌘K | Mark all as read (current view) |
+| ⌥⌘S | Reading statistics |
 | ⌘, | Settings |
 
 Single-key shortcuts are ignored while you type in a text field.
@@ -100,6 +101,12 @@ When enabled (Settings › Offline), after each refresh Flux downloads unread ar
 - Optionally **mark old articles as read** after 1 day to 1 month, with a preview of how many articles are affected before you apply.
 - Read articles that aren't favorites are **deleted** after 2 weeks to 1 year (2 months by default), or never.
 - **Limitation:** deleting a feed also deletes its articles, favorites included.
+
+### 📊 Reading statistics
+
+View › Reading Statistics (⌥⌘S): articles read, time spent reading, estimated reading time (at 230 words per minute), a chart of articles read per day, and the most read and most active sources, over 7 days, 30 days, 3 months or 12 months.
+
+- **Limitations:** reading is recorded from this version on (no history before it). An article counts as read after being shown for 3 seconds, and the time spent is the time it stayed on screen, not proof that you read it. Published articles are only counted while Flux keeps them.
 
 ### ⚙️ Settings
 

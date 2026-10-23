@@ -1,5 +1,7 @@
 /* Interface de Flux en anglais. Clés = textes sources (français). */
 
+"%@ : %lld %@" = "%1$@: %2$lld %3$@";
+"%lld %@" = "%1$lld %2$@";
 "%lld articles actuels correspondent." = "%lld current articles match.";
 "%lld articles non lus seront marqués comme lus." = "%lld unread articles will be marked as read.";
 "%lld articles sélectionnés" = "%lld articles selected";
@@ -13,6 +15,7 @@
 "1 jour" = "1 day";
 "1 mois" = "1 month";
 "1 semaine" = "1 week";
+"12 mois" = "12 months";
 "2 Go" = "2 GB";
 "2 jours" = "2 days";
 "2 mois" = "2 months";
@@ -20,9 +23,11 @@
 "250 Mo" = "250 MB";
 "3 jours" = "3 days";
 "3 mois" = "3 months";
+"30 jours" = "30 days";
 "5 Go" = "5 GB";
 "500 Mo" = "500 MB";
 "6 mois" = "6 months";
+"7 jours" = "7 days";
 "Action" = "Action";
 "Actualisation" = "Refresh";
 "Actualiser les flux" = "Refresh feeds";
@@ -52,6 +57,8 @@
 "Archiver maintenant" = "Archive Now";
 "Article complet" = "Full Article";
 "Articles : %lld sur %lld" = "Articles: %lld of %lld";
+"Articles lus par jour" = "Articles read per day";
+"Articles lus" = "Articles read";
 "Articles publiés il y a plus de" = "Articles published more than";
 "Articles" = "Articles";
 "Aucun abonnement trouvé dans ce fichier." = "No subscriptions found in this file.";
@@ -64,6 +71,7 @@
 "Aucun flux RSS ou Atom trouvé à cette adresse." = "No RSS or Atom feed found at this address.";
 "Aucun résultat" = "No Results";
 "Aucun" = "None";
+"Aucune lecture enregistrée pour l'instant. Un article compte comme lu après 3 secondes d'affichage." = "No reading recorded yet. An article counts as read after being shown for 3 seconds.";
 "Aucune règle. Ajoute un mot-clé pour masquer les articles dont le titre le contient." = "No rules. Add a keyword to hide articles whose title contains it.";
 "Automatique" = "Automatic";
 "Bleu canard" = "Teal";
@@ -106,6 +114,7 @@
 "Indigo" = "Indigo";
 "Jamais" = "Never";
 "Jaune" = "Yellow";
+"Jour" = "Day";
 "La nouvelle langue s'appliquera au prochain lancement." = "The new language will apply the next time Flux launches.";
 "La nouvelle langue sera appliquée au redémarrage de l'app." = "The new language will be applied when the app restarts.";
 "Langue du système" = "System Language";
@@ -115,6 +124,7 @@
 "Largeur du texte" = "Text Width";
 "Le serveur a répondu avec l'erreur %lld." = "The server responded with error %lld.";
 "Lecture" = "Reading";
+"Lectures enregistrées depuis le %@. Un article compte comme lu après 3 secondes d'affichage. Les articles publiés ne sont comptés que tant qu'ils sont conservés." = "Reading recorded since %@. An article counts as read after being shown for 3 seconds. Published articles are only counted while they are kept.";
 "Les articles non lus et les favoris sont toujours conservés. Les articles lus restent retrouvables dans l'Historique et par la recherche jusqu'à leur suppression." = "Unread articles and favorites are always kept. Read articles can be found in History and through search until they are deleted.";
 "Les règles portent sur le titre, sans tenir compte des majuscules ni des accents. Elles s'appliquent aux articles existants et à ceux qui arrivent. Les favoris ne sont jamais filtrés. Supprimer une règle fait réapparaître les articles qu'elle masquait." = "Rules apply to the title, ignoring case and accents. They apply to existing and incoming articles. Favorites are never filtered. Deleting a rule brings back the articles it was hiding.";
 "Liste" = "List";
@@ -146,7 +156,9 @@
 "Orange" = "Orange";
 "Ouvrir dans le navigateur" = "Open in Browser";
 "Ouvrir le site" = "Open Website";
+"Par jour" = "Per day";
 "Pas de connexion : les articles préparés pour la lecture hors ligne restent lisibles." = "No connection: articles prepared for offline reading are still available.";
+"Pas encore de données sur cette période." = "No data for this period yet.";
 "Personnaliser…" = "Customize…";
 "Plus tard" = "Later";
 "Préparation…" = "Preparing…";
@@ -154,6 +166,7 @@
 "Préparer maintenant" = "Prepare Now";
 "Présentation de la liste : liste ou vignettes" = "Article list layout: list or thumbnails";
 "Présentation" = "View";
+"Période" = "Period";
 "Quand tu ajoutes un favori, l'article complet et ses images sont rangés dans une archive permanente, indépendante du cache hors ligne : tu peux le relire même si le site le supprime. Retirer un favori libère sa place." = "When you add a favorite, the full article and its images are stored in a permanent archive, separate from the offline cache: you can read it again even if the site deletes it. Removing a favorite frees its space.";
 "Readability.js" = "Readability.js";
 "Rechercher" = "Search";
@@ -174,6 +187,9 @@
 "Réglages" = "Settings";
 "S'applique aux articles existants et à ceux qui arrivent. Les favoris ne sont jamais marqués automatiquement." = "Applies to existing and incoming articles. Favorites are never marked automatically.";
 "Sombre" = "Dark";
+"Sources les plus actives" = "Most active sources";
+"Sources les plus lues" = "Most read sources";
+"Statistiques de lecture" = "Reading Statistics";
 "Stockage" = "Storage";
 "Supprimer la règle" = "Delete Rule";
 "Supprimer le dossier" = "Delete Folder";
@@ -181,6 +197,8 @@
 "Supprimer les articles lus après" = "Delete read articles after";
 "Taille de l'archive" = "Archive size";
 "Taille maximale du cache d'images" = "Maximum image cache size";
+"Temps de lecture" = "Reading time";
+"Temps estimé" = "Estimated time";
 "Tous les articles" = "All Articles";
 "Tous les flux" = "All Feeds";
 "Tout est lu" = "All Caught Up";
@@ -200,9 +218,15 @@
 "Vignettes en plein écran (l'article s'ouvre à la place de la grille)" = "Full-width thumbnails (the article opens in place of the grid)";
 "Vignettes" = "Thumbnails";
 "Violet" = "Purple";
+"articles lus en moyenne" = "articles read on average";
 "ex. : Bitcoin" = "e.g. Bitcoin";
 "https://exemple.fr/feed.xml" = "https://example.com/feed.xml";
+"lus" = "read";
+"publiés" = "published";
+"sur %lld reçus" = "out of %lld received";
+"temps d'affichage" = "time on screen";
 "À propos de Flux" = "About Flux";
 "Échec du téléchargement : %@" = "Download failed: %@";
 "Étroite" = "Narrow";
+"à 230 mots par minute" = "at 230 words per minute";
 "⌘-clic pour ajouter ou retirer un article, ⇧-clic pour sélectionner une plage." = "⌘-click to add or remove an article, ⇧-click to select a range.";

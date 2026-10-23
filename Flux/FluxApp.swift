@@ -45,6 +45,10 @@ struct FluxApp: App {
             CommandGroup(replacing: .appInfo) {
                 AboutMenuItem()
             }
+            CommandGroup(after: .toolbar) {
+                Divider()
+                StatsMenuItem()
+            }
             CommandGroup(after: .newItem) {
                 Divider()
                 Button("Importer des abonnements (OPML)…") { ui.showOPMLImport = true }
@@ -53,6 +57,12 @@ struct FluxApp: App {
                     .keyboardShortcut("e", modifiers: [.command, .shift])
             }
         }
+
+        Window("Statistiques de lecture", id: "stats") {
+            StatsView()
+        }
+        .modelContainer(container)
+        .defaultSize(width: 760, height: 680)
 
         Window("À propos de Flux", id: "about") {
             AboutView()

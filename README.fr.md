@@ -80,6 +80,7 @@ Des règles (Réglages › Filtres) excluent les articles selon un mot-clé dans
 | ⌘N / ⇧⌘N | Ajouter un flux / nouveau dossier |
 | ⌘R | Actualiser |
 | ⇧⌘K | Tout marquer comme lu (vue en cours) |
+| ⌥⌘S | Statistiques de lecture |
 | ⌘, | Réglages |
 
 Les raccourcis à une touche sont ignorés pendant la saisie dans un champ de texte.
@@ -100,6 +101,12 @@ Quand elle est activée (Réglages › Hors ligne), Flux télécharge après cha
 - En option, **marquer comme lus les anciens articles** au-delà de 1 jour à 1 mois, avec un aperçu du nombre d'articles concernés avant d'appliquer.
 - Les articles lus qui ne sont pas en favoris sont **supprimés** après 2 semaines à 1 an (2 mois par défaut), ou jamais.
 - **Limite :** supprimer un flux supprime aussi ses articles, favoris compris.
+
+### 📊 Statistiques de lecture
+
+Présentation › Statistiques de lecture (⌥⌘S) : articles lus, temps passé à lire, temps de lecture estimé (à 230 mots par minute), graphique des articles lus par jour, sources les plus lues et les plus actives, sur 7 jours, 30 jours, 3 mois ou 12 mois.
+
+- **Limites :** les lectures sont enregistrées à partir de cette version (pas d'historique avant). Un article compte comme lu après 3 secondes d'affichage, et le temps passé est le temps où il est resté à l'écran, pas la preuve que tu l'as lu. Les articles publiés ne sont comptés que tant que Flux les conserve.
 
 ### ⚙️ Réglages
 
