@@ -21,7 +21,7 @@ struct SidebarView: View {
         allFeeds.sorted { $0.displayTitle.localizedStandardCompare($1.displayTitle) == .orderedAscending }
     }
     @Query(sort: \Folder.name) private var folders: [Folder]
-    @Query(filter: #Predicate<Article> { !$0.isRead }) private var unread: [Article]
+    @Query(filter: #Predicate<Article> { !$0.isRead && !$0.isHidden }) private var unread: [Article]
 
     @State private var newFolderName = ""
     @State private var editingFolder: Folder?

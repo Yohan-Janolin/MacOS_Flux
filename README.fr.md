@@ -59,6 +59,13 @@ Flux est une app SwiftUI native, en français et en anglais, en mode clair et so
 - Mise en page de lecture soignée, claire ou sombre, avec trois largeurs de texte (étroite, large, toute la largeur). Les liens s'ouvrent dans ton navigateur par défaut.
 - **Limites :** les articles réservés aux abonnés d'un site restent tronqués, puisque le site lui-même ne fournit pas la suite. Les pages entièrement construites en JavaScript peuvent être mal extraites : le bouton « Ouvrir dans le navigateur » est là pour elles.
 
+### 🚫 Filtres par mots-clés
+
+Des règles (Réglages › Filtres) excluent les articles selon un mot-clé dans leur titre, sans tenir compte des majuscules ni des accents : **masquer** l'article, ou simplement le **marquer comme lu**. Une règle vaut pour tous les flux ou pour un seul, pour le mot entier ou n'importe où dans le titre, et indique combien d'articles elle touche (avec un aperçu avant d'enregistrer).
+
+- Les règles s'appliquent aux articles existants et à ceux qui arrivent ; les favoris ne sont jamais filtrés. Supprimer une règle fait réapparaître les articles qu'elle masquait.
+- **Limite :** seul le titre est examiné, pas le texte de l'article.
+
 ### ⌨️ Raccourcis clavier, façon Reeder
 
 | Touche | Action |
@@ -94,7 +101,7 @@ Quand elle est activée (Réglages › Hors ligne), Flux télécharge après cha
 
 ### ⚙️ Réglages
 
-Apparence (automatique, clair, sombre), langue (système, français, anglais), résumé sous le titre, largeur du texte de l'article, délai avant de marquer comme lu, intervalle d'actualisation (de 15 minutes à 6 heures), lecture hors ligne et stockage.
+Les réglages sont rangés en quatre onglets (Général, Lecture, Filtres, Stockage) : apparence (automatique, clair, sombre), langue (système, français, anglais), résumé sous le titre, largeur du texte de l'article, délai avant de marquer comme lu, intervalle d'actualisation (de 15 minutes à 6 heures), lecture hors ligne et stockage.
 
 ## 🧩 Compatibilité
 

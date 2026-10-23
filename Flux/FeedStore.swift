@@ -156,6 +156,7 @@ final class FeedStore {
         // On n'importe pas les articles plus vieux que la durée de conservation
         let cutoff = Prefs.retentionCutoff
         let autoReadCutoff = Prefs.autoMarkReadCutoff
+        let filters = compiledFilters()
         var added: [Article] = []
 
         for item in parsed.items.prefix(200) {
@@ -188,6 +189,7 @@ final class FeedStore {
             if let autoReadCutoff, article.published < autoReadCutoff, !article.isStarred {
                 article.isRead = true
             }
+            applyFilters(filters, to: article)
             context.insert(article)
             article.feed = feed
             added.append(article)
@@ -289,6 +291,84 @@ final class FeedStore {
         try? context.save()
     }
 
+    // MARK: - Filtres
+
+    func compiledFilters() -> [CompiledFilter] {
+        ((try? context.fetch(FetchDescriptor<FilterRule>())) ?? []).map(CompiledFilter.init)
+    }
+
+    /// Applique la première règle qui correspond (les favoris ne sont jamais filtrés)
+    private func applyFilters(_ filters: [CompiledFilter], to article: Article) {
+        guard !article.isStarred, article.filteredBy == nil,
+              let rule = filters.first(where: { $0.matches(title: article.title, feedURL: article.feedURL) }) else { return }
+        article.filteredBy = rule.uid
+        switch rule.action {
+        case .hide: article.isHidden = true
+        case .markRead: article.isRead = true
+        }
+    }
+
+    /// Repasse toutes les règles sur les articles qui ne sont filtrés par aucune
+    func applyFiltersToExisting() {
+        let filters = compiledFilters()
+        guard !filters.isEmpty else { return }
+        let predicate = #Predicate<Article> { $0.filteredBy == nil && !$0.isStarred }
+        for article in (try? context.fetch(FetchDescriptor(predicate: predicate))) ?? [] {
+            applyFilters(filters, to: article)
+        }
+        try? context.save()
+    }
+
+    /// Libère les articles filtrés par une règle (ils réapparaissent ; ceux déjà marqués comme lus le restent)
+    private func releaseArticles(of uid: String) {
+        let predicate = #Predicate<Article> { $0.filteredBy == uid }
+        for article in (try? context.fetch(FetchDescriptor(predicate: predicate))) ?? [] {
+            article.filteredBy = nil
+            article.isHidden = false
+        }
+    }
+
+    func addFilter(keyword: String, wholeWord: Bool, action: FilterAction, feedURL: String?) {
+        let trimmed = keyword.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        context.insert(FilterRule(keyword: trimmed, wholeWord: wholeWord, action: action, feedURL: feedURL))
+        try? context.save()
+        applyFiltersToExisting()
+    }
+
+    func updateFilter(_ rule: FilterRule, keyword: String, wholeWord: Bool, action: FilterAction, feedURL: String?) {
+        let trimmed = keyword.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        releaseArticles(of: rule.uid)
+        rule.keyword = trimmed
+        rule.wholeWord = wholeWord
+        rule.action = action.rawValue
+        rule.feedURL = feedURL
+        try? context.save()
+        applyFiltersToExisting()
+    }
+
+    func deleteFilter(_ rule: FilterRule) {
+        releaseArticles(of: rule.uid)
+        context.delete(rule)
+        try? context.save()
+        applyFiltersToExisting()   // une autre règle peut encore s'appliquer
+    }
+
+    /// Aperçu d'une règle pas encore enregistrée : nombre d'articles (hors favoris) dont le titre correspond
+    func previewMatchCount(_ filter: CompiledFilter) -> Int {
+        var descriptor = FetchDescriptor<Article>(predicate: #Predicate { !$0.isStarred })
+        descriptor.propertiesToFetch = [\.title, \.feedURL]
+        let articles = (try? context.fetch(descriptor)) ?? []
+        return articles.reduce(0) { $0 + (filter.matches(title: $1.title, feedURL: $1.feedURL) ? 1 : 0) }
+    }
+
+    /// Nombre d'articles actuellement touchés par une règle
+    func matchCount(of rule: FilterRule) -> Int {
+        let uid = rule.uid
+        return (try? context.fetchCount(FetchDescriptor<Article>(predicate: #Predicate { $0.filteredBy == uid }))) ?? 0
+    }
+
     // MARK: - Hors ligne
 
     /// Prépare la lecture hors ligne des articles non lus et des favoris :
@@ -300,7 +380,7 @@ final class FeedStore {
         defer { offlineStatus = nil }
 
         var descriptor = FetchDescriptor<Article>(
-            predicate: #Predicate { !$0.isRead || $0.isStarred },
+            predicate: #Predicate { (!$0.isRead && !$0.isHidden) || $0.isStarred },
             sortBy: [SortDescriptor(\.published, order: .reverse)]
         )
         descriptor.fetchLimit = 400
@@ -490,7 +570,7 @@ final class FeedStore {
     /// Nombre d'articles non lus (hors favoris) publiés il y a plus de `days` jours
     func unreadCount(olderThanDays days: Int) -> Int {
         let cutoff = Date.now.addingTimeInterval(-Double(max(days, 1)) * 86_400)
-        let predicate = #Predicate<Article> { !$0.isRead && !$0.isStarred && $0.published < cutoff }
+        let predicate = #Predicate<Article> { !$0.isRead && !$0.isHidden && !$0.isStarred && $0.published < cutoff }
         return (try? context.fetchCount(FetchDescriptor(predicate: predicate))) ?? 0
     }
 

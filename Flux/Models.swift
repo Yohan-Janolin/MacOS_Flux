@@ -56,6 +56,45 @@ final class Folder {
     }
 }
 
+/// Règle d'exclusion par mot-clé, appliquée au titre des articles
+@Model
+final class FilterRule {
+    @Attribute(.unique) var uid: String
+    var keyword: String
+    /// Mot entier (« Apple » ne touche pas « Applevision ») ou n'importe où dans le titre
+    var wholeWord: Bool
+    /// FilterAction.rawValue
+    var action: String
+    /// Flux concerné (nil = tous les flux)
+    var feedURL: String?
+    var createdAt: Date
+
+    init(keyword: String, wholeWord: Bool, action: FilterAction, feedURL: String?) {
+        self.uid = UUID().uuidString
+        self.keyword = keyword
+        self.wholeWord = wholeWord
+        self.action = action.rawValue
+        self.feedURL = feedURL
+        self.createdAt = .now
+    }
+
+    var filterAction: FilterAction { FilterAction(rawValue: action) ?? .hide }
+}
+
+enum FilterAction: String, CaseIterable, Identifiable {
+    case hide
+    case markRead
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .hide: String(localized: "Masquer l'article")
+        case .markRead: String(localized: "Marquer comme lu")
+        }
+    }
+}
+
 extension Folder {
     var symbolName: String { symbol ?? "folder" }
     var tint: Color? { colorName.flatMap(FolderColor.init(rawValue:))?.color }
@@ -126,6 +165,10 @@ final class Article {
     /// Titre + résumé + contenu en texte brut, pour la recherche plein texte
     /// ("" = pas encore calculé pour les articles importés avant cette version)
     var searchText: String = ""
+    /// Masqué par une règle de filtrage (n'apparaît nulle part, ne compte pas dans les non-lus)
+    var isHidden: Bool = false
+    /// Règle de filtrage (FilterRule.uid) qui a masqué ou marqué comme lu cet article
+    var filteredBy: String?
     var imageURL: String?
     var author: String?
     var published: Date

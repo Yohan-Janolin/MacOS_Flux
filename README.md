@@ -59,6 +59,13 @@ Flux is a native SwiftUI app, available in English and French, in light and dark
 - Clean reading layout, light or dark, with three text widths (narrow, wide, full width). Links open in your default browser.
 - **Limitations:** articles reserved for a site's subscribers stay cut, since the site itself doesn't serve the rest. Pages built entirely in JavaScript can be extracted poorly: the “Open in Browser” button is there for those.
 
+### 🚫 Keyword filters
+
+Rules (Settings › Filters) exclude articles by a keyword in their title, ignoring case and accents: **hide** the article, or simply **mark it as read**. A rule applies to all feeds or to a single one, to the whole word or anywhere in the title, and shows how many articles it affects (with a preview before you save it).
+
+- Rules apply to existing and incoming articles; favorites are never filtered. Deleting a rule brings back the articles it was hiding.
+- **Limitation:** only the title is checked, not the article text.
+
 ### ⌨️ Keyboard shortcuts, Reeder style
 
 | Key | Action |
@@ -94,7 +101,7 @@ When enabled (Settings › Offline), after each refresh Flux downloads unread ar
 
 ### ⚙️ Settings
 
-Appearance (automatic, light, dark), language (system, English, French), summary under the title, article text width, mark-as-read delay, refresh interval (15 minutes to 6 hours), offline reading and storage.
+Settings are organized in four tabs (General, Reading, Filters, Storage): appearance (automatic, light, dark), language (system, English, French), summary under the title, article text width, mark-as-read delay, refresh interval (15 minutes to 6 hours), offline reading and storage.
 
 ## 🧩 Compatibility
 

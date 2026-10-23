@@ -36,26 +36,27 @@ struct ArticleListView: View {
         if q.isEmpty {
             switch filter {
             case .all:
-                predicate = nil
+                predicate = #Predicate { !$0.isHidden }
             case .unread:
-                predicate = #Predicate { !$0.isRead || sticky.contains($0.key) }
+                predicate = #Predicate { !$0.isHidden && (!$0.isRead || sticky.contains($0.key)) }
             case .starred:
                 predicate = #Predicate { $0.isStarred }
             case .feed(let url):
-                predicate = #Predicate { $0.feedURL == url }
+                predicate = #Predicate { !$0.isHidden && $0.feedURL == url }
             case .folder:
-                predicate = #Predicate { urls.contains($0.feedURL) }
+                predicate = #Predicate { !$0.isHidden && urls.contains($0.feedURL) }
             }
         } else {
             // Même filtres, restreints aux articles dont le titre ou le texte contient la recherche
             switch filter {
             case .all:
                 predicate = #Predicate {
-                    $0.title.localizedStandardContains(q) || $0.searchText.localizedStandardContains(q)
+                    !$0.isHidden
+                        && ($0.title.localizedStandardContains(q) || $0.searchText.localizedStandardContains(q))
                 }
             case .unread:
                 predicate = #Predicate {
-                    (!$0.isRead || sticky.contains($0.key))
+                    !$0.isHidden && (!$0.isRead || sticky.contains($0.key))
                         && ($0.title.localizedStandardContains(q) || $0.searchText.localizedStandardContains(q))
                 }
             case .starred:
@@ -65,12 +66,12 @@ struct ArticleListView: View {
                 }
             case .feed(let url):
                 predicate = #Predicate {
-                    $0.feedURL == url
+                    !$0.isHidden && $0.feedURL == url
                         && ($0.title.localizedStandardContains(q) || $0.searchText.localizedStandardContains(q))
                 }
             case .folder:
                 predicate = #Predicate {
-                    urls.contains($0.feedURL)
+                    !$0.isHidden && urls.contains($0.feedURL)
                         && ($0.title.localizedStandardContains(q) || $0.searchText.localizedStandardContains(q))
                 }
             }
