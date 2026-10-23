@@ -396,7 +396,7 @@ struct ArticleRow: View {
                     if !article.isRead {
                         Circle().fill(.tint).frame(width: 7, height: 7)
                     }
-                    Text(article.feed?.displayTitle ?? "")
+                    Text(article.sourceName)
                         .lineLimit(1)
                     if otherSources > 0 {
                         OtherSourcesBadge(count: otherSources)
@@ -506,7 +506,7 @@ struct ArticleCard: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
-        .help(article.feed?.displayTitle ?? "")
+        .help(article.sourceName)
     }
 
     private var placeholder: some View {

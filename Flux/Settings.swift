@@ -21,6 +21,9 @@ enum Prefs {
     static let readerWidth = "readerWidth"
     /// Afficher le résumé sous le titre en mode liste
     static let showSummary = "showSummary"
+    /// Taille du texte de lecture, en points
+    static let readerFontSize = "readerFontSize"
+    static let readerFontSizes: ClosedRange<Int> = 13...28
     /// Ancien réglage (remplacé par articleLayout = "gridFull"), lu une fois pour la migration
     static let gridFullWidth = "gridFullWidth"
     /// Archiver les favoris (article complet + images) dans un stockage permanent
@@ -42,6 +45,7 @@ enum Prefs {
         imageCacheLimitMB: 1024,
         readerWidth: "narrow",
         showSummary: true,
+        readerFontSize: 17,
         archiveFavorites: true,
         groupDuplicates: true,
         duplicateSensitivity: 1,

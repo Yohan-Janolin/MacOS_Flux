@@ -56,7 +56,7 @@ Flux est une app SwiftUI native, en français et en anglais, en mode clair et so
 ### 📖 L'article complet, dans l'app
 
 - Quand un flux ne donne qu'un extrait (court, ou coupé par « … » ou « Lire la suite »), Flux télécharge la page et en extrait l'article avec [Readability.js](https://github.com/mozilla/readability), le moteur du mode Lecture de Firefox. Un bouton permet de passer de la version du flux à l'article complet.
-- Mise en page de lecture soignée, claire ou sombre, avec trois largeurs de texte (étroite, large, toute la largeur). Les liens s'ouvrent dans ton navigateur par défaut.
+- Mise en page de lecture soignée, claire ou sombre, avec une taille de texte réglable (⌘+ / ⌘− / ⌘0) et trois largeurs de texte (étroite, large, toute la largeur). Les liens s'ouvrent dans ton navigateur par défaut.
 - **Limites :** les articles réservés aux abonnés d'un site restent tronqués, puisque le site lui-même ne fournit pas la suite. Les pages entièrement construites en JavaScript peuvent être mal extraites : le bouton « Ouvrir dans le navigateur » est là pour elles.
 
 ### 🧲 Articles similaires
@@ -88,6 +88,7 @@ Des règles (Réglages › Filtres) excluent les articles selon un mot-clé dans
 | ⌘N / ⇧⌘N | Ajouter un flux / nouveau dossier |
 | ⌘R | Actualiser |
 | ⇧⌘K | Tout marquer comme lu (vue en cours) |
+| ⌘+ / ⌘− / ⌘0 | Agrandir / réduire / taille par défaut du texte |
 | ⌥⌘S | Statistiques de lecture |
 | ⌘, | Réglages |
 
@@ -108,7 +109,7 @@ Quand elle est activée (Réglages › Hors ligne), Flux télécharge après cha
 - **Marquer les articles comme lus** immédiatement, après 5, 10 ou 30 secondes, ou jamais (Réglages › Lecture).
 - En option, **marquer comme lus les anciens articles** au-delà de 1 jour à 1 mois, avec un aperçu du nombre d'articles concernés avant d'appliquer.
 - Les articles lus qui ne sont pas en favoris sont **supprimés** après 2 semaines à 1 an (2 mois par défaut), ou jamais.
-- **Limite :** supprimer un flux supprime aussi ses articles, favoris compris.
+- Supprimer un flux supprime ses articles **sauf ses favoris**, qui restent dans Favoris (et retrouvent le flux si tu l'ajoutes à nouveau).
 
 ### 📊 Statistiques de lecture
 

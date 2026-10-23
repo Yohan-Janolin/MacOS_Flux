@@ -11,6 +11,7 @@ struct SettingsView: View {
     @AppStorage(Prefs.markReadDelay) private var markReadDelay = 0
     @AppStorage(Prefs.showSummary) private var showSummary = true
     @AppStorage(Prefs.readerWidth) private var readerWidth = "narrow"
+    @AppStorage(Prefs.readerFontSize) private var readerFontSize = 17
     @AppStorage(Prefs.archiveFavorites) private var archiveFavorites = true
     @AppStorage(Prefs.groupDuplicates) private var groupDuplicates = true
     @AppStorage(Prefs.duplicateSensitivity) private var duplicateSensitivity = 1
@@ -61,6 +62,21 @@ struct SettingsView: View {
 
                 Section("Affichage") {
                     Toggle("Afficher le résumé sous le titre (mode liste)", isOn: $showSummary)
+                    LabeledContent("Taille du texte de l'article") {
+                        HStack(spacing: 10) {
+                            Image(systemName: "textformat.size.smaller").foregroundStyle(.secondary)
+                            Slider(value: Binding(
+                                get: { Double(readerFontSize) },
+                                set: { readerFontSize = Int($0.rounded()) }
+                            ), in: Double(Prefs.readerFontSizes.lowerBound)...Double(Prefs.readerFontSizes.upperBound), step: 1)
+                            .frame(width: 160)
+                            Image(systemName: "textformat.size.larger").foregroundStyle(.secondary)
+                            Text(verbatim: "\(readerFontSize) pt")
+                                .monospacedDigit()
+                                .foregroundStyle(.secondary)
+                                .frame(width: 44, alignment: .trailing)
+                        }
+                    }
                     Picker("Largeur du texte de l'article", selection: $readerWidth) {
                         Text("Étroite").tag("narrow")
                         Text("Large").tag("wide")

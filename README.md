@@ -56,7 +56,7 @@ Flux is a native SwiftUI app, available in English and French, in light and dark
 ### 📖 The full article, in the app
 
 - When a feed only provides an excerpt (short, or cut with “…” or “Read more”), Flux downloads the page and extracts the article with [Readability.js](https://github.com/mozilla/readability), the engine behind Firefox's Reader View. A button switches between the feed version and the full article.
-- Clean reading layout, light or dark, with three text widths (narrow, wide, full width). Links open in your default browser.
+- Clean reading layout, light or dark, with an adjustable text size (⌘+ / ⌘− / ⌘0) and three text widths (narrow, wide, full width). Links open in your default browser.
 - **Limitations:** articles reserved for a site's subscribers stay cut, since the site itself doesn't serve the rest. Pages built entirely in JavaScript can be extracted poorly: the “Open in Browser” button is there for those.
 
 ### 🧲 Similar articles
@@ -88,6 +88,7 @@ Rules (Settings › Filters) exclude articles by a keyword in their title, ignor
 | ⌘N / ⇧⌘N | Add a feed / new folder |
 | ⌘R | Refresh |
 | ⇧⌘K | Mark all as read (current view) |
+| ⌘+ / ⌘− / ⌘0 | Bigger / smaller / default text size |
 | ⌥⌘S | Reading statistics |
 | ⌘, | Settings |
 
@@ -108,7 +109,7 @@ When enabled (Settings › Offline), after each refresh Flux downloads unread ar
 - **Mark articles as read** immediately, after 5, 10 or 30 seconds, or never (Settings › Reading).
 - Optionally **mark old articles as read** after 1 day to 1 month, with a preview of how many articles are affected before you apply.
 - Read articles that aren't favorites are **deleted** after 2 weeks to 1 year (2 months by default), or never.
-- **Limitation:** deleting a feed also deletes its articles, favorites included.
+- Deleting a feed deletes its articles **except its favorites**, which stay in Favorites (and go back to the feed if you add it again).
 
 ### 📊 Reading statistics
 

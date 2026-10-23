@@ -9,6 +9,7 @@ struct ArticleDetailView: View {
     @State private var showFull = false
     @Environment(FeedStore.self) private var store
     @AppStorage(Prefs.readerWidth) private var readerWidth = "narrow"
+    @AppStorage(Prefs.readerFontSize) private var readerFontSize = 17
     @State private var loading = false
     @State private var errorMessage: String?
 
@@ -32,7 +33,9 @@ struct ArticleDetailView: View {
     }
 
     private var reader: some View {
-        ArticleWebView(html: ReaderTemplate.render(article, body: bodyHTML, width: readerWidth), baseURL: articleURL)
+        ArticleWebView(html: ReaderTemplate.render(article, body: bodyHTML, width: readerWidth, fontSize: readerFontSize),
+                       baseURL: articleURL,
+                       contentID: article.key + (showFull ? "|full" : "|feed"))
             .overlay(alignment: .top) {
                 if loading {
                     HStack(spacing: 8) {
@@ -61,6 +64,19 @@ struct ArticleDetailView: View {
             .toolbar {
                 ToolbarItem {
                     Menu {
+                        Button {
+                            readerFontSize = min(readerFontSize + 1, Prefs.readerFontSizes.upperBound)
+                        } label: {
+                            Label("Agrandir le texte", systemImage: "textformat.size.larger")
+                        }
+                        Button {
+                            readerFontSize = max(readerFontSize - 1, Prefs.readerFontSizes.lowerBound)
+                        } label: {
+                            Label("Réduire le texte", systemImage: "textformat.size.smaller")
+                        }
+                        Button("Taille par défaut") { readerFontSize = 17 }
+                            .disabled(readerFontSize == 17)
+                        Divider()
                         Picker("Largeur du texte", selection: $readerWidth) {
                             Label("Étroite", systemImage: "rectangle.portrait").tag("narrow")
                             Label("Large", systemImage: "rectangle").tag("wide")
@@ -68,9 +84,9 @@ struct ArticleDetailView: View {
                         }
                         .pickerStyle(.inline)
                     } label: {
-                        Label("Largeur du texte", systemImage: "arrow.left.and.right.text.vertical")
+                        Label("Texte", systemImage: "textformat.size")
                     }
-                    .help("Largeur du texte")
+                    .help("Taille et largeur du texte (⌘+ / ⌘−)")
                 }
                 ToolbarItemGroup {
                     Button {
@@ -167,7 +183,7 @@ struct SimilarArticlesBar: View {
                         Button {
                             onSelect(article.key)
                         } label: {
-                            Text(article.feed?.displayTitle ?? URL(string: article.feedURL)?.host() ?? "")
+                            Text(article.sourceName)
                                 .lineLimit(1)
                         }
                         .buttonStyle(.bordered)

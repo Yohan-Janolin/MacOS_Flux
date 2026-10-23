@@ -27,6 +27,7 @@ struct SidebarView: View {
 
     @State private var newFolderName = ""
     @State private var editingFolder: Folder?
+    @State private var feedToDelete: Feed?
     @State private var renamingFeed: Feed?
     @State private var feedName = ""
 
@@ -100,6 +101,25 @@ struct SidebarView: View {
         } message: {
             if let feed = renamingFeed {
                 Text("Nom d'origine : \(feed.title)")
+            }
+        }
+        .alert(
+            Text("Supprimer « \(feedToDelete?.displayTitle ?? "") » ?"),
+            isPresented: Binding(get: { feedToDelete != nil }, set: { if !$0 { feedToDelete = nil } })
+        ) {
+            Button("Supprimer", role: .destructive) {
+                if let feed = feedToDelete {
+                    if selection == .feed(feed.url) { selection = .all }
+                    store.delete(feed)
+                }
+            }
+            Button("Annuler", role: .cancel) {}
+        } message: {
+            if let feed = feedToDelete {
+                let favorites = store.favoriteCount(of: feed)
+                Text(favorites == 0
+                     ? String(localized: "Ses articles seront supprimés.")
+                     : String(localized: "Ses articles seront supprimés, sauf ses \(favorites) favoris, qui restent dans Favoris."))
             }
         }
         .sheet(item: $editingFolder) { folder in
@@ -191,9 +211,8 @@ struct SidebarView: View {
                     NSPasteboard.general.setString(feed.url, forType: .string)
                 }
                 Divider()
-                Button("Supprimer le flux", role: .destructive) {
-                    if selection == .feed(feed.url) { selection = .all }
-                    store.delete(feed)
+                Button("Supprimer le flux…", role: .destructive) {
+                    feedToDelete = feed
                 }
             }
     }

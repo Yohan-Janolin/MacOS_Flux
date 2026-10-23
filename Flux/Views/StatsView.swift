@@ -12,6 +12,23 @@ struct StatsMenuItem: View {
     }
 }
 
+/// Présentation › Agrandir / Réduire le texte de l'article
+struct ReaderTextSizeCommands: View {
+    @AppStorage(Prefs.readerFontSize) private var size = 17
+
+    var body: some View {
+        Button("Agrandir le texte") { size = min(size + 1, Prefs.readerFontSizes.upperBound) }
+            .keyboardShortcut("+", modifiers: .command)
+            .disabled(size >= Prefs.readerFontSizes.upperBound)
+        Button("Réduire le texte") { size = max(size - 1, Prefs.readerFontSizes.lowerBound) }
+            .keyboardShortcut("-", modifiers: .command)
+            .disabled(size <= Prefs.readerFontSizes.lowerBound)
+        Button("Taille par défaut") { size = 17 }
+            .keyboardShortcut("0", modifiers: .command)
+            .disabled(size == 17)
+    }
+}
+
 /// Fenêtre « Statistiques de lecture »
 struct StatsView: View {
     enum Period: Int, CaseIterable, Identifiable {

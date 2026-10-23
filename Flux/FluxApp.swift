@@ -47,6 +47,8 @@ struct FluxApp: App {
             }
             CommandGroup(after: .toolbar) {
                 Divider()
+                ReaderTextSizeCommands()
+                Divider()
                 StatsMenuItem()
             }
             CommandGroup(after: .newItem) {

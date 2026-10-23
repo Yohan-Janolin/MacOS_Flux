@@ -7,6 +7,8 @@ import WebKit
 struct ArticleWebView: NSViewRepresentable {
     let html: String
     let baseURL: URL?
+    /// Même contenu (seule la mise en forme change) : on garde la position de lecture
+    var contentID: String = ""
     @Environment(KeyboardRouter.self) private var keyboard
 
     func makeCoordinator() -> Coordinator { Coordinator() }
@@ -24,15 +26,40 @@ struct ArticleWebView: NSViewRepresentable {
     }
 
     func updateNSView(_ webView: WKWebView, context: Context) {
-        guard context.coordinator.lastHTML != html else { return }
-        context.coordinator.lastHTML = html
-        webView.loadHTMLString(html, baseURL: baseURL)
+        let coordinator = context.coordinator
+        guard coordinator.lastHTML != html else { return }
+        let restyleOnly = coordinator.lastHTML != nil && coordinator.lastContentID == contentID
+        coordinator.lastHTML = html
+        coordinator.lastContentID = contentID
+        guard restyleOnly else {
+            webView.loadHTMLString(html, baseURL: baseURL)
+            return
+        }
+        // Taille ou largeur du texte modifiée : on recharge en restant au même endroit (en proportion)
+        let html = html, baseURL = baseURL
+        Task { @MainActor in
+            let fraction = try? await webView.callAsyncJavaScript(
+                "const el = document.scrollingElement || document.documentElement; return el.scrollHeight > 0 ? el.scrollTop / el.scrollHeight : 0;",
+                arguments: [:], in: nil, contentWorld: .defaultClient) as? Double
+            coordinator.restoreFraction = fraction
+            webView.loadHTMLString(html, baseURL: baseURL)
+        }
     }
 
     @MainActor
     final class Coordinator: NSObject, WKNavigationDelegate {
         var lastHTML: String?
+        var lastContentID: String?
+        var restoreFraction: Double?
         let imageHandler = CachedImageSchemeHandler()
+
+        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+            guard let fraction = restoreFraction, fraction > 0 else { return }
+            restoreFraction = nil
+            webView.callAsyncJavaScript(
+                "const el = document.scrollingElement || document.documentElement; el.scrollTop = f * el.scrollHeight;",
+                arguments: ["f": fraction], in: nil, in: .defaultClient, completionHandler: nil)
+        }
 
         func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction) async -> WKNavigationActionPolicy {
             guard navigationAction.navigationType == .linkActivated,
@@ -50,13 +77,14 @@ struct ArticleWebView: NSViewRepresentable {
 
 enum ReaderTemplate {
     /// `width` : "narrow" (680 pt, confortable à lire), "wide" (960 pt) ou "full" (toute la largeur)
-    static func render(_ article: Article, body: String, width: String = "narrow") -> String {
+    /// `fontSize` : taille du texte en points (le titre et les légendes suivent en proportion)
+    static func render(_ article: Article, body: String, width: String = "narrow", fontSize: Int = 17) -> String {
         let maxWidth = switch width {
         case "full": "none"
         case "wide": "960px"
         default: "680px"
         }
-        var meta = [article.feed?.displayTitle, article.author]
+        var meta = [Optional(article.sourceName), article.author]
             .compactMap { $0 }
             .filter { !$0.isEmpty }
             .map(HTMLUtils.escape)
@@ -79,7 +107,7 @@ enum ReaderTemplate {
         <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <style>\(css) article { max-width: \(maxWidth); }</style>
+        <style>\(css) article { max-width: \(maxWidth); } html { font-size: \(fontSize)px; }</style>
         </head>
         <body>
         <article>
@@ -101,13 +129,13 @@ enum ReaderTemplate {
     html { -webkit-text-size-adjust: 100%; }
     body {
       margin: 0; padding: 44px 48px 96px;
-      font: 17px/1.68 -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+      font: 1rem/1.68 -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
       color: var(--text); background: transparent;
       -webkit-font-smoothing: antialiased;
     }
     article { max-width: 680px; margin: 0 auto; }
-    .meta { color: var(--muted); font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
-    h1.title { font: 700 32px/1.18 "New York", ui-serif, Georgia, serif; letter-spacing: -.01em; margin: 10px 0 22px; }
+    .meta { color: var(--muted); font-size: .71rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+    h1.title { font: 700 1.88rem/1.18 "New York", ui-serif, Georgia, serif; letter-spacing: -.01em; margin: 10px 0 22px; }
     .hero { display: block; width: 100%; max-height: 440px; object-fit: cover; border-radius: 14px; margin: 0 0 28px; }
     .content h1, .content h2, .content h3 { line-height: 1.3; margin: 1.6em 0 .5em; }
     .content h1 { font-size: 1.5em; } .content h2 { font-size: 1.3em; } .content h3 { font-size: 1.1em; }
@@ -116,14 +144,14 @@ enum ReaderTemplate {
     a:hover { text-decoration: underline; }
     img, video, iframe, svg { max-width: 100%; height: auto; border-radius: 10px; }
     figure { margin: 1.8em 0; }
-    figcaption { color: var(--muted); font-size: 13px; line-height: 1.45; margin-top: 8px; text-align: center; }
+    figcaption { color: var(--muted); font-size: .76rem; line-height: 1.45; margin-top: 8px; text-align: center; }
     blockquote { margin: 1.4em 0; padding: 2px 0 2px 18px; border-left: 3px solid var(--rule); color: var(--muted); font-style: italic; }
     hr { border: 0; border-top: 1px solid var(--rule); margin: 2em 0; }
-    pre, code { font: 14px/1.5 ui-monospace, "SF Mono", Menlo, monospace; }
+    pre, code { font: .82rem/1.5 ui-monospace, "SF Mono", Menlo, monospace; }
     code { background: var(--code); padding: .1em .35em; border-radius: 5px; }
     pre { background: var(--code); padding: 14px 16px; border-radius: 10px; overflow-x: auto; }
     pre code { background: none; padding: 0; }
-    table { border-collapse: collapse; width: 100%; font-size: 15px; }
+    table { border-collapse: collapse; width: 100%; font-size: .88rem; }
     td, th { border-bottom: 1px solid var(--rule); padding: 6px 8px; text-align: left; }
     ul, ol { padding-left: 1.4em; }
     """

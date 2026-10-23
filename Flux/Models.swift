@@ -183,6 +183,8 @@ final class Article {
     var isDuplicate: Bool = false
     /// Séparé à la main de son groupe : ne sera plus jamais regroupé
     var clusterOptOut: Bool = false
+    /// Nom de la source, gardé quand son flux est supprimé (favoris conservés)
+    var sourceTitle: String?
     var imageURL: String?
     var author: String?
     var published: Date
@@ -223,6 +225,11 @@ extension Article {
         let html = fullHTML ?? contentHTML
         searchText = Article.makeSearchText(title: title, summary: summary, html: html)
         wordCount = Article.countWords(html)
+    }
+
+    /// Nom de la source à afficher (même si le flux a été supprimé)
+    var sourceName: String {
+        feed?.displayTitle ?? sourceTitle ?? URL(string: feedURL)?.host() ?? feedURL
     }
 
     static func countWords(_ html: String?) -> Int {

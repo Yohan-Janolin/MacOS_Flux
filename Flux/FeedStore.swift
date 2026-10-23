@@ -34,6 +34,10 @@ final class FeedStore {
         let feed = Feed(url: key, title: title, siteURL: parsed.siteURL)
         context.insert(feed)
         feed.folder = folder
+        // Favoris conservés d'une précédente suppression de ce flux : ils le retrouvent
+        let sameURL = (try? context.fetch(FetchDescriptor<Article>(
+            predicate: #Predicate { $0.feedURL == key }))) ?? []
+        for article in sameURL where article.feed == nil { article.feed = feed }
         var added = ingest(parsed, into: feed)
         feed.lastRefreshed = .now
         try? context.save()
@@ -339,9 +343,20 @@ final class FeedStore {
         try? context.save()
     }
 
+    /// Supprime un flux et ses articles, sauf les favoris : ils restent dans Favoris
+    /// (et reviennent dans le flux si on l'ajoute à nouveau)
     func delete(_ feed: Feed) {
+        let name = feed.displayTitle
+        for article in Array(feed.articles) where article.isStarred {
+            article.sourceTitle = name
+            article.feed = nil
+        }
         context.delete(feed)
         try? context.save()
+    }
+
+    func favoriteCount(of feed: Feed) -> Int {
+        feed.articles.filter(\.isStarred).count
     }
 
     // MARK: - Filtres
