@@ -32,7 +32,8 @@ enum Prefs {
     static let groupDuplicates = "groupDuplicates"
     /// DuplicateDetector.Sensitivity.rawValue
     static let duplicateSensitivity = "duplicateSensitivity"
-    static let duplicatesInitialized = "duplicatesInitialized"
+    /// Version de l'algorithme qui a calculé les groupes actuels
+    static let duplicatesVersion = "duplicatesVersion"
     /// Synchronisation entre Mac par iCloud Drive
     static let syncEnabled = "syncEnabled"
 

@@ -23,13 +23,15 @@ final class DuplicateDetector {
             }
         }
 
-        /// Indice de Jaccard minimal entre les mots des titres
-        var wordThreshold: Double { [0.6, 0.45, 0.35][rawValue] }
+        /// Recouvrement minimal des mots des titres, pondérés par leur rareté
+        var wordThreshold: Double { [0.5, 0.4, 0.32][rawValue] }
         /// Similarité cosinus minimale entre les sens des titres
-        var meaningThreshold: Double { [0.86, 0.80, 0.74][rawValue] }
+        var meaningThreshold: Double { [0.88, 0.83, 0.78][rawValue] }
     }
 
     static let window: TimeInterval = 48 * 3600
+    /// À augmenter quand l'algorithme change : les groupes sont alors recalculés
+    static let version = 2
 
     struct Signature {
         let words: Set<String>
@@ -40,6 +42,9 @@ final class DuplicateDetector {
 
     private let sensitivity: Sensitivity
     private var vectors: [String: [Double]] = [:]
+    /// Nombre de titres contenant chaque mot (sur la période comparée)
+    private var documentFrequency: [String: Int] = [:]
+    private var documentCount = 1
     private var embeddings: [NLLanguage: NLEmbedding] = [:]
 
     init(sensitivity: Sensitivity) {
@@ -87,17 +92,39 @@ final class DuplicateDetector {
 
     // MARK: - Comparaison
 
+    /// Mesure la fréquence des mots sur les titres de la période : un mot présent dans
+    /// beaucoup de titres (« iPhone », « Apple » une semaine de keynote) ne prouve rien
+    func prepare(_ signatures: [Signature]) {
+        documentCount = max(signatures.count, 1)
+        documentFrequency = [:]
+        for signature in signatures {
+            for word in signature.words { documentFrequency[word, default: 0] += 1 }
+        }
+    }
+
+    /// Mot trop courant sur la période pour distinguer une actualité d'une autre
+    private func isCommon(_ word: String) -> Bool {
+        (documentFrequency[word] ?? 0) > max(4, documentCount / 50)
+    }
+
+    /// Poids d'un mot : d'autant plus fort qu'il est rare
+    private func weight(_ word: String) -> Double {
+        log(Double(documentCount + 1) / Double((documentFrequency[word] ?? 0) + 1)) + 0.05
+    }
+
     /// Score de similarité (nil = pas un doublon)
     func score(_ a: Signature, _ b: Signature) -> Double? {
-        if let la = a.link, la == b.link { return 2 }
+        if let la = a.link, la == b.link { return 3 }
 
-        let shared = a.words.intersection(b.words).count
-        guard shared >= 2 else { return nil }
-        let jaccard = Double(shared) / Double(a.words.union(b.words).count)
-        if jaccard >= sensitivity.wordThreshold { return 1 + jaccard }
+        let shared = a.words.intersection(b.words)
+        // Au moins deux mots partagés qui ne sont pas des mots du moment
+        guard shared.filter({ !isCommon($0) }).count >= 2 else { return nil }
+        let union = a.words.union(b.words)
+        let overlap = shared.reduce(0) { $0 + weight($1) } / max(union.reduce(0) { $0 + weight($1) }, 0.0001)
+        if overlap >= sensitivity.wordThreshold { return 1 + overlap }
 
-        // Titres formulés différemment : on compare leur sens
-        guard let language = a.language, language == b.language,
+        // Titres formulés différemment : on compare aussi leur sens, s'ils se recoupent déjà un peu
+        guard overlap >= 0.25, let language = a.language, language == b.language,
               let va = vector(for: a), let vb = vector(for: b) else { return nil }
         let similarity = Self.cosine(va, vb)
         return similarity >= sensitivity.meaningThreshold ? similarity : nil

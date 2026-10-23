@@ -63,7 +63,7 @@ Flux est une app SwiftUI native, en français et en anglais, en mode clair et so
 
 Quand plusieurs sources publient la même actualité à moins de 48 heures d'écart, Flux les regroupe : un seul article apparaît dans les listes, avec un badge « +N », et l'article affiche les autres sources pour lire leur version. Le lire marque tout le groupe comme lu.
 
-- Les articles sont regroupés quand ils pointent vers le même lien, ou quand leurs titres partagent au moins deux mots importants et sont assez proches, mot à mot ou par le sens (plongements de phrases du framework NaturalLanguage d'Apple, calculés sur ton Mac).
+- Les articles sont regroupés quand ils pointent vers le même lien, ou quand leurs titres partagent au moins deux mots distinctifs et sont assez proches, mot à mot ou par le sens (plongements de phrases du framework NaturalLanguage d'Apple, calculés sur ton Mac). Les mots présents dans beaucoup de titres du moment (« iPhone » une semaine de lancement) comptent très peu. Un groupe contient au plus un article par source, et un article doit ressembler au premier du groupe pour le rejoindre.
 - Réglages › Lecture : activé par défaut, avec trois niveaux de sensibilité.
 - **Limites :** le regroupement n'est jamais parfait. Il rate certains doublons dont les titres sont formulés très différemment, et peut parfois réunir deux actualités distinctes : clic droit › Séparer des articles similaires. La vue d'un flux affiche toujours tous ses articles.
 

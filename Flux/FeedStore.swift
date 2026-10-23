@@ -454,8 +454,9 @@ final class FeedStore {
     /// Rattache les nouveaux articles aux articles similaires des autres sources (48 h autour)
     func groupDuplicates(_ newArticles: [Article]) {
         guard UserDefaults.standard.bool(forKey: Prefs.groupDuplicates) else { return }
-        if !UserDefaults.standard.bool(forKey: Prefs.duplicatesInitialized) {
-            UserDefaults.standard.set(true, forKey: Prefs.duplicatesInitialized)
+        // Première fois, ou algorithme amélioré depuis : on refait tous les groupes
+        if UserDefaults.standard.integer(forKey: Prefs.duplicatesVersion) < DuplicateDetector.version {
+            UserDefaults.standard.set(DuplicateDetector.version, forKey: Prefs.duplicatesVersion)
             regroupRecentDuplicates()
             return
         }
@@ -468,7 +469,8 @@ final class FeedStore {
         cluster(candidates, within: pool)
     }
 
-    /// Recalcule les groupes des 3 derniers jours (réglages modifiés, premier lancement)
+    /// Recalcule les groupes : tous défaits, puis les 7 derniers jours regroupés
+    /// (réglages modifiés, nouvelle version de l'algorithme)
     func regroupRecentDuplicates() {
         // Option désactivée : on défait tous les groupes, anciens compris
         guard UserDefaults.standard.bool(forKey: Prefs.groupDuplicates) else {
@@ -481,13 +483,15 @@ final class FeedStore {
             try? context.save()
             return
         }
-        let since = Date.now.addingTimeInterval(-3 * 86_400)
-        let recent = (try? context.fetch(FetchDescriptor<Article>(
-            predicate: #Predicate { $0.published >= since }))) ?? []
-        for article in recent where article.clusterID != nil {
+        let clustered = (try? context.fetch(FetchDescriptor<Article>(
+            predicate: #Predicate { $0.clusterID != nil }))) ?? []
+        for article in clustered {
             article.clusterID = nil
             article.isDuplicate = false
         }
+        let since = Date.now.addingTimeInterval(-7 * 86_400)
+        let recent = (try? context.fetch(FetchDescriptor<Article>(
+            predicate: #Predicate { $0.published >= since }))) ?? []
         if UserDefaults.standard.bool(forKey: Prefs.groupDuplicates) {
             let usable = recent.filter { !$0.isHidden && !$0.clusterOptOut }
             cluster(usable.sorted { $0.published < $1.published }, within: usable)
@@ -510,9 +514,20 @@ final class FeedStore {
             for word in signature.words { byWord[word, default: []].append(article) }
             if let link = signature.link { byLink[link, default: []].append(article) }
         }
+        detector.prepare(Array(signatures.values))
+
+        // Groupes existants : leurs membres (pour connaître les sources déjà présentes et le premier article)
+        var members: [String: [Article]] = [:]
+        for article in pool { if let id = article.clusterID { members[id, default: []].append(article) } }
+        func groupMembers(_ id: String) -> [Article] {
+            if let known = members[id] { return known }
+            let fetched = clusterMembers(id)
+            members[id] = fetched
+            return fetched
+        }
 
         var touched = Set<String>()
-        for article in candidates {
+        for article in candidates where article.clusterID == nil {
             guard let signature = signatures[article.key] else { continue }
             var possible: [String: Article] = [:]
             for word in signature.words { for other in byWord[word] ?? [] { possible[other.key] = other } }
@@ -522,26 +537,36 @@ final class FeedStore {
             for other in possible.values {
                 guard other.key != article.key, other.feedURL != article.feedURL,
                       abs(other.published.timeIntervalSince(article.published)) <= DuplicateDetector.window,
-                      other.clusterID == nil || other.clusterID != article.clusterID,
                       let otherSignature = signatures[other.key],
                       let score = detector.score(signature, otherSignature) else { continue }
+                if let id = other.clusterID {
+                    let group = groupMembers(id)
+                    // Une source ne publie pas deux fois la même actualité : une seule place par source
+                    guard !group.contains(where: { $0.feedURL == article.feedURL }) else { continue }
+                    // Pas de réaction en chaîne : il faut aussi ressembler au premier article du groupe
+                    if let lead = group.min(by: { $0.published < $1.published }), lead.key != other.key {
+                        let leadSignature = signatures[lead.key] ?? detector.signature(title: lead.title, link: lead.link)
+                        guard detector.score(signature, leadSignature) != nil else { continue }
+                    }
+                }
                 if score > (best?.score ?? 0) { best = (other, score) }
             }
             guard let match = best?.article else { continue }
-            let cluster = match.clusterID ?? article.clusterID ?? UUID().uuidString
-            if let old = article.clusterID, old != cluster {
-                for member in pool where member.clusterID == old { member.clusterID = cluster }
+            let id = match.clusterID ?? UUID().uuidString
+            if match.clusterID == nil {
+                match.clusterID = id
+                members[id] = [match]
             }
-            article.clusterID = cluster
-            match.clusterID = cluster
-            touched.insert(cluster)
+            article.clusterID = id
+            members[id, default: []].append(article)
+            touched.insert(id)
         }
 
         // Dans chaque groupe, le premier publié représente l'actualité ; les autres suivent son état de lecture
-        for cluster in touched {
-            let members = clusterMembers(cluster)
-            guard let lead = members.first else { continue }
-            for member in members {
+        for id in touched {
+            let group = clusterMembers(id)
+            guard let lead = group.first else { continue }
+            for member in group {
                 member.isDuplicate = member.key != lead.key
                 if member.isDuplicate, lead.isRead, !member.isRead { member.isRead = true }
             }

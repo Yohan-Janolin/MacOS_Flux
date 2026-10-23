@@ -63,7 +63,7 @@ Flux is a native SwiftUI app, available in English and French, in light and dark
 
 When several sources publish the same story within 48 hours, Flux groups them: only one article appears in the lists, with a “+N” badge, and the article shows the other sources so you can read their version. Reading it marks the whole group as read.
 
-- Articles are grouped when they point to the same link, or when their titles share at least two significant words and are close enough, word for word or in meaning (sentence embeddings from Apple's NaturalLanguage framework, computed on your Mac).
+- Articles are grouped when they point to the same link, or when their titles share at least two distinctive words and are close enough, word for word or in meaning (sentence embeddings from Apple's NaturalLanguage framework, computed on your Mac). Words that appear in many titles at the moment (“iPhone” during a launch week) count very little. A group holds at most one article per source, and an article must resemble the group's first article to join it.
 - Settings › Reading: on by default, with three sensitivity levels.
 - **Limitations:** grouping is never perfect. It misses some duplicates whose titles are worded very differently, and can occasionally group two different stories: right-click › Separate from Similar Articles. A single feed's view always shows all its articles.
 
