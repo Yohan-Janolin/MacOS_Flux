@@ -22,6 +22,14 @@ struct ContentView: View {
     @AppStorage(Prefs.articleLayout) private var articleLayout = "list"
     static let listWidthRange: ClosedRange<Double> = 300...700
     @AppStorage(Prefs.refreshMinutes) private var refreshMinutes = 30
+    @AppStorage(Prefs.gridFullWidth) private var gridFullWidth = false
+
+    /// Vignettes en plein écran : la grille occupe liste + lecture, l'article s'ouvre par-dessus
+    private var immersiveGrid: Bool { articleLayout == "grid" && gridFullWidth }
+    /// Article ouvert par-dessus la grille (mode vignettes plein écran)
+    @State private var articleOpen = false
+
+    private var showsArticleOverGrid: Bool { immersiveGrid && articleOpen && selectedArticle != nil }
 
     /// Observé pour que la liste se mette à jour quand on déplace un flux de dossier
     @Query private var feeds: [Feed]
@@ -47,6 +55,16 @@ struct ContentView: View {
         return try? context.fetch(descriptor).first
     }
 
+    private var articleList: some View {
+        ArticleListView(
+            filter: filter ?? .all,
+            selection: $selectedKeys,
+            folderFeedURLs: folderFeedURLs,
+            searchText: searchText.trimmingCharacters(in: .whitespaces),
+            onOpen: { _ in if immersiveGrid { articleOpen = true } }
+        )
+    }
+
     var body: some View {
         // Deux colonnes seulement pour NavigationSplitView (barre latérale | reste) :
         // en trois colonnes, macOS ignore la largeur voulue de la liste au lancement
@@ -55,28 +73,56 @@ struct ContentView: View {
         NavigationSplitView {
             SidebarView(selection: $filter, showNewFolder: $showNewFolder)
         } detail: {
-            HStack(spacing: 0) {
-                ArticleListView(
-                    filter: filter ?? .all,
-                    selection: $selectedKeys,
-                    folderFeedURLs: folderFeedURLs,
-                    searchText: searchText.trimmingCharacters(in: .whitespaces)
-                )
-                .frame(width: listWidth)
+            Group {
+                if immersiveGrid {
+                    // La grille reste en place sous l'article : on retrouve sa position au retour
+                    ZStack {
+                        articleList
+                            .opacity(showsArticleOverGrid ? 0 : 1)
+                            .allowsHitTesting(!showsArticleOverGrid)
+                        if showsArticleOverGrid, let article = selectedArticle {
+                            VStack(spacing: 0) {
+                                HStack {
+                                    Button {
+                                        articleOpen = false
+                                    } label: {
+                                        Label("Articles", systemImage: "chevron.left")
+                                    }
+                                    .buttonStyle(.borderless)
+                                    .help("Revenir aux vignettes (Échap)")
+                                    Spacer()
+                                }
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 8)
+                                Divider()
+                                ArticleDetailView(article: article)
+                                    .id(article.key)
+                            }
+                            .background(.background)
+                            .transition(.opacity)
+                        }
+                    }
+                    .animation(.easeInOut(duration: 0.15), value: showsArticleOverGrid)
+                } else {
+                    HStack(spacing: 0) {
+                        articleList
+                            .frame(width: listWidth)
 
-                ColumnResizer(width: $listWidth, range: Self.listWidthRange)
+                        ColumnResizer(width: $listWidth, range: Self.listWidthRange)
 
-                Group {
-                    if let article = selectedArticle {
-                        ArticleDetailView(article: article)
-                            .id(article.key)
-                    } else if selectedKeys.count > 1 {
-                        MultiSelectionView(keys: selectedKeys)
-                    } else {
-                        ContentUnavailableView("Aucun article sélectionné", systemImage: "newspaper")
+                        Group {
+                            if let article = selectedArticle {
+                                ArticleDetailView(article: article)
+                                    .id(article.key)
+                            } else if selectedKeys.count > 1 {
+                                MultiSelectionView(keys: selectedKeys)
+                            } else {
+                                ContentUnavailableView("Aucun article sélectionné", systemImage: "newspaper")
+                            }
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                     }
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
             .searchable(text: $searchText, placement: .toolbar, prompt: Text("Rechercher"))
         }
@@ -188,10 +234,14 @@ struct ContentView: View {
         }
         .onChange(of: filter) {
             selectedKeys = []
+            articleOpen = false
         }
-        .task(id: selectedKeys.count == 1 ? selectedKeys.first : nil) {
+        .task(id: ReadTrigger(key: selectedKeys.count == 1 ? selectedKeys.first : nil,
+                              visible: !immersiveGrid || articleOpen)) {
             // Marque comme lu l'article ouvert, selon le réglage (immédiatement, après un délai, ou jamais).
             // Changer d'article annule la tâche : un article survolé quelques secondes reste non lu.
+            // En vignettes plein écran, une carte simplement sélectionnée n'est pas lue.
+            guard !immersiveGrid || articleOpen else { return }
             guard let article = selectedArticle, !article.isRead else { return }
             let delay = UserDefaults.standard.integer(forKey: Prefs.markReadDelay)
             guard delay >= 0 else { return }
@@ -201,6 +251,18 @@ struct ContentView: View {
             }
             article.isRead = true
         }
+        .onChange(of: keyboard.event) { _, event in
+            if event?.command == .back { articleOpen = false }
+        }
+        .onChange(of: showsArticleOverGrid, initial: true) { _, open in
+            keyboard.handlesEscape = open
+            guard open else { return }
+            // L'article prend le focus : flèches et espace le font défiler (et non la grille cachée)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                if let webView = keyboard.readerWebView { webView.window?.makeFirstResponder(webView) }
+            }
+        }
+        .onChange(of: immersiveGrid) { articleOpen = false }
         .background(WindowReader { keyboard.mainWindow = $0 })
         .onAppear { keyboard.start() }
         .task {
@@ -318,5 +380,11 @@ struct MultiSelectionView: View {
         .padding(32)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
+}
+
+/// Identifie « tel article, visible ou non » pour relancer le marquage comme lu
+private struct ReadTrigger: Equatable {
+    let key: String?
+    let visible: Bool
 }
 

@@ -13,6 +13,8 @@ enum KeyCommand: Equatable {
     case toggleStar     // s
     case openInBrowser  // b
     case selectAll      // ⌘A
+    case open           // Entrée : ouvrir l'article (vignettes plein écran)
+    case back           // Échap : revenir aux vignettes
 }
 
 /// Intercepte les touches de la fenêtre principale et les transmet à la liste
@@ -31,6 +33,8 @@ final class KeyboardRouter {
 
     @ObservationIgnored weak var mainWindow: NSWindow?
     @ObservationIgnored weak var readerWebView: WKWebView?
+    /// Échap n'est intercepté que lorsqu'un article est ouvert par-dessus les vignettes
+    @ObservationIgnored var handlesEscape = false
     @ObservationIgnored private var monitor: Any?
 
     func start() {
@@ -55,6 +59,18 @@ final class KeyboardRouter {
             return true
         }
         guard event.modifierFlags.intersection([.command, .control, .option]).isEmpty else { return false }
+
+        switch event.keyCode {
+        case 53 where handlesEscape:     // Échap
+            self.event = Event(command: .back)
+            return true
+        case 36, 76:                     // Entrée, Entrée du pavé numérique
+            guard !isInsideWebView(window.firstResponder) else { return false }
+            self.event = Event(command: .open)
+            return true
+        default:
+            break
+        }
 
         let shift = event.modifierFlags.contains(.shift)
         let command: KeyCommand

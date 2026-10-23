@@ -17,7 +17,12 @@ struct ArticleListView: View {
 
     /// `folderFeedURLs` : adresses des flux du dossier quand `filter` est `.folder`
     /// `searchText` : recherche dans le titre et le texte complet (vide = pas de recherche)
-    init(filter: SidebarSelection, selection: Binding<Set<String>>, folderFeedURLs: [String] = [], searchText: String = "") {
+    /// Appelé quand on ouvre un article (clic simple, ou Entrée)
+    private let onOpen: ((Article) -> Void)?
+
+    init(filter: SidebarSelection, selection: Binding<Set<String>>, folderFeedURLs: [String] = [], searchText: String = "",
+         onOpen: ((Article) -> Void)? = nil) {
+        self.onOpen = onOpen
         self.filter = filter
         self._selection = selection
         self.isSearching = !searchText.isEmpty
@@ -234,6 +239,7 @@ struct ArticleListView: View {
         } else {
             selection = [key]
             anchor = key
+            onOpen?(article)
         }
         cursor = key
         isFocused = true
@@ -304,6 +310,10 @@ struct ArticleListView: View {
             }
         case .selectAll:
             selectAll()
+        case .open:
+            if let single { onOpen?(single) }
+        case .back:
+            isFocused = true   // retour aux vignettes : les flèches reviennent à la grille
         }
     }
 

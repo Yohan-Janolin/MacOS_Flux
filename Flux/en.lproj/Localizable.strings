@@ -44,6 +44,7 @@
 "Article complet" = "Full Article";
 "Articles : %lld sur %lld" = "Articles: %lld of %lld";
 "Articles publiés il y a plus de" = "Articles published more than";
+"Articles" = "Articles";
 "Aucun abonnement trouvé dans ce fichier." = "No subscriptions found in this file.";
 "Aucun article non lu concerné pour l'instant." = "No unread articles affected for now.";
 "Aucun article sélectionné" = "No Article Selected";
@@ -139,6 +140,7 @@
 "Renommer" = "Rename";
 "Renommer…" = "Rename…";
 "Retirer des favoris" = "Remove from Favorites";
+"Revenir aux vignettes (Échap)" = "Back to thumbnails (Esc)";
 "Rose" = "Pink";
 "Rouge" = "Red";
 "Récupération de l'article complet…" = "Fetching the full article…";
@@ -167,6 +169,7 @@
 "Version du flux" = "Feed Version";
 "Vert" = "Green";
 "Vider" = "Clear";
+"Vignettes en plein écran (l'article s'ouvre à la place de la grille)" = "Full-width thumbnails (the article opens in place of the grid)";
 "Vignettes" = "Thumbnails";
 "Violet" = "Purple";
 "https://exemple.fr/feed.xml" = "https://example.com/feed.xml";

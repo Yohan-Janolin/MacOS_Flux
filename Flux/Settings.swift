@@ -20,6 +20,8 @@ enum Prefs {
     static let readerWidth = "readerWidth"
     /// Afficher le résumé sous le titre en mode liste
     static let showSummary = "showSummary"
+    /// En mode vignettes, la grille prend toute la place (l'article s'ouvre par-dessus)
+    static let gridFullWidth = "gridFullWidth"
 
     static let defaults: [String: Any] = [
         autoMarkReadEnabled: false,
@@ -32,6 +34,7 @@ enum Prefs {
         imageCacheLimitMB: 1024,
         readerWidth: "narrow",
         showSummary: true,
+        gridFullWidth: false,
     ]
 
     static func register() {
