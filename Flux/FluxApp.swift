@@ -5,6 +5,7 @@ import SwiftUI
 struct FluxApp: App {
     private let container: ModelContainer
     @State private var store: FeedStore
+    @State private var sync: SyncEngine
     @State private var ui = UIState()
     @State private var keyboard = KeyboardRouter()
 
@@ -28,13 +29,16 @@ struct FluxApp: App {
             fatalError("Impossible d'ouvrir la base : \(error)")
         }
         container = modelContainer
-        _store = State(initialValue: FeedStore(context: modelContainer.mainContext))
+        let feedStore = FeedStore(context: modelContainer.mainContext)
+        _store = State(initialValue: feedStore)
+        _sync = State(initialValue: SyncEngine(store: feedStore))
     }
 
     var body: some Scene {
         Window("Flux", id: "main") {
             ContentView()
                 .environment(store)
+                .environment(sync)
                 .environment(ui)
                 .environment(keyboard)
                 .frame(minWidth: 1000, minHeight: 560)
@@ -76,6 +80,7 @@ struct FluxApp: App {
         Settings {
             SettingsView()
                 .environment(store)
+                .environment(sync)
                 .modelContainer(container)
         }
     }

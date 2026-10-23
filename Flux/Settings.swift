@@ -33,6 +33,8 @@ enum Prefs {
     /// DuplicateDetector.Sensitivity.rawValue
     static let duplicateSensitivity = "duplicateSensitivity"
     static let duplicatesInitialized = "duplicatesInitialized"
+    /// Synchronisation entre Mac par iCloud Drive
+    static let syncEnabled = "syncEnabled"
 
     static let defaults: [String: Any] = [
         autoMarkReadEnabled: false,

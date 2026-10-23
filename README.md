@@ -117,9 +117,16 @@ View › Reading Statistics (⌥⌘S): articles read, time spent reading, estima
 
 - **Limitations:** reading is recorded from this version on (no history before it). An article counts as read after being shown for 3 seconds, and the time spent is the time it stayed on screen, not proof that you read it. Published articles are only counted while Flux keeps them.
 
+### ☁️ Sync between Macs
+
+Settings › Sync: turn it on on each Mac (same iCloud account) to keep your **feeds, folders, custom names, filter rules, read articles and favorites** in sync. Flux writes a small state file per Mac in `iCloud Drive/Flux/` and merges the others: when something changed on both Macs, the most recent change wins, item by item.
+
+- Not synced: settings, history, statistics and images (each Mac downloads its own, favorites archive included).
+- **Limitations:** iCloud Drive must be turned on; changes arrive as fast as iCloud Drive carries the files (usually within a minute). Flux uses iCloud Drive rather than CloudKit, which requires a paid Apple Developer account. The first time, macOS may ask for permission to access iCloud Drive.
+
 ### ⚙️ Settings
 
-Settings are organized in four tabs (General, Reading, Filters, Storage): appearance (automatic, light, dark), language (system, English, French), summary under the title, article text width, mark-as-read delay, refresh interval (15 minutes to 6 hours), offline reading and storage.
+Settings are organized in five tabs (General, Reading, Filters, Storage, Sync): appearance (automatic, light, dark), language (system, English, French), summary under the title, article text width, mark-as-read delay, refresh interval (15 minutes to 6 hours), offline reading and storage.
 
 ## 🧩 Compatibility
 
@@ -133,11 +140,12 @@ None. Flux needs no special permission: it only uses the network to download you
 
 ## 🔒 Privacy
 
-Flux collects nothing and sends nothing about you. There is no account, no analytics and no tracking. The only network requests go directly to the sites you subscribe to: their feeds, the pages of their articles, their images and their favicons. Everything is stored on your Mac:
+Flux collects nothing and sends nothing about you. There is no account, no analytics and no tracking. Apart from the optional sync through your own iCloud Drive, the only network requests go directly to the sites you subscribe to: their feeds, the pages of their articles, their images and their favicons. Everything is stored on your Mac:
 
 - articles, feeds and folders: `~/Library/Application Support/Flux/Flux.store`;
 - image cache: `~/Library/Application Support/Flux/Images`;
-- favorites archive: `~/Library/Application Support/Flux/Archive`.
+- favorites archive: `~/Library/Application Support/Flux/Archive`;
+- sync (if turned on): one file per Mac in `iCloud Drive/Flux/devices/`, stored in your own iCloud.
 
 ## 📥 Installation
 

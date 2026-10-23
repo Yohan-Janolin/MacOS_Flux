@@ -117,9 +117,16 @@ Présentation › Statistiques de lecture (⌥⌘S) : articles lus, temps passé
 
 - **Limites :** les lectures sont enregistrées à partir de cette version (pas d'historique avant). Un article compte comme lu après 3 secondes d'affichage, et le temps passé est le temps où il est resté à l'écran, pas la preuve que tu l'as lu. Les articles publiés ne sont comptés que tant que Flux les conserve.
 
+### ☁️ Synchronisation entre Mac
+
+Réglages › Synchronisation : active-la sur chaque Mac (même compte iCloud) pour garder synchronisés tes **flux, dossiers, noms personnalisés, règles de filtrage, articles lus et favoris**. Flux écrit un petit fichier d'état par Mac dans `iCloud Drive/Flux/` et fusionne ceux des autres : quand un élément a changé sur les deux Mac, la modification la plus récente l'emporte, élément par élément.
+
+- Non synchronisés : réglages, historique, statistiques et images (chaque Mac télécharge les siennes, archive des favoris comprise).
+- **Limites :** iCloud Drive doit être activé ; les changements arrivent aussi vite qu'iCloud Drive transporte les fichiers (en général en moins d'une minute). Flux passe par iCloud Drive plutôt que CloudKit, qui exige un compte développeur Apple payant. La première fois, macOS peut demander l'autorisation d'accéder à iCloud Drive.
+
 ### ⚙️ Réglages
 
-Les réglages sont rangés en quatre onglets (Général, Lecture, Filtres, Stockage) : apparence (automatique, clair, sombre), langue (système, français, anglais), résumé sous le titre, largeur du texte de l'article, délai avant de marquer comme lu, intervalle d'actualisation (de 15 minutes à 6 heures), lecture hors ligne et stockage.
+Les réglages sont rangés en cinq onglets (Général, Lecture, Filtres, Stockage, Synchronisation) : apparence (automatique, clair, sombre), langue (système, français, anglais), résumé sous le titre, largeur du texte de l'article, délai avant de marquer comme lu, intervalle d'actualisation (de 15 minutes à 6 heures), lecture hors ligne et stockage.
 
 ## 🧩 Compatibilité
 
@@ -133,11 +140,12 @@ Aucune. Flux n'a besoin d'aucune autorisation particulière : il utilise seuleme
 
 ## 🔒 Confidentialité
 
-Flux ne collecte rien et n'envoie rien te concernant. Pas de compte, pas de statistiques, pas de pistage. Les seules requêtes réseau vont directement aux sites auxquels tu es abonné : leurs flux, les pages de leurs articles, leurs images et leurs favicons. Tout est stocké sur ton Mac :
+Flux ne collecte rien et n'envoie rien te concernant. Pas de compte, pas de statistiques, pas de pistage. En dehors de la synchronisation facultative par ton propre iCloud Drive, les seules requêtes réseau vont directement aux sites auxquels tu es abonné : leurs flux, les pages de leurs articles, leurs images et leurs favicons. Tout est stocké sur ton Mac :
 
 - articles, flux et dossiers : `~/Library/Application Support/Flux/Flux.store` ;
 - cache d'images : `~/Library/Application Support/Flux/Images` ;
-- archive des favoris : `~/Library/Application Support/Flux/Archive`.
+- archive des favoris : `~/Library/Application Support/Flux/Archive` ;
+- synchronisation (si activée) : un fichier par Mac dans `iCloud Drive/Flux/devices/`, dans ton propre iCloud.
 
 ## 📥 Installation
 

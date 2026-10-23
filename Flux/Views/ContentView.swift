@@ -8,6 +8,7 @@ struct ContentView: View {
     @Environment(\.modelContext) private var context
     @Environment(UIState.self) private var ui
     @Environment(KeyboardRouter.self) private var keyboard
+    @Environment(SyncEngine.self) private var sync
 
     @State private var filter: SidebarSelection? = .all
     /// Articles sélectionnés dans la liste (sélection multiple possible)
@@ -308,7 +309,10 @@ struct ContentView: View {
         }
         .onChange(of: immersiveGrid) { articleOpen = false }
         .background(WindowReader { keyboard.mainWindow = $0 })
-        .onAppear { keyboard.start() }
+        .onAppear {
+            keyboard.start()
+            sync.start()
+        }
         .task {
             // Actualisation au lancement
             await store.refreshAll()

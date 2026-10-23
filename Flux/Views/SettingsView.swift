@@ -255,6 +255,9 @@ struct SettingsView: View {
             }
             .formStyle(.grouped)
             .tabItem { Label("Stockage", systemImage: "internaldrive") }
+
+            SyncSettingsView()
+                .tabItem { Label("Synchronisation", systemImage: "icloud") }
         }
         .frame(width: 580, height: 520)
         .onChange(of: appearance) {

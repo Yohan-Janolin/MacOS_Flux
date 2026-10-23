@@ -69,6 +69,7 @@
 "Aucun article ouvert pour l'instant" = "No articles opened yet";
 "Aucun article sélectionné" = "No Article Selected";
 "Aucun article" = "No Articles";
+"Aucun autre Mac pour l'instant. Active la synchronisation sur ton autre Mac : il apparaîtra ici." = "No other Mac yet. Turn on sync on your other Mac: it will appear here.";
 "Aucun favori" = "No Favorites";
 "Aucun flux RSS ou Atom trouvé à cette adresse." = "No RSS or Atom feed found at this address.";
 "Aucun résultat" = "No Results";
@@ -79,6 +80,7 @@
 "Aussi publié par une autre source" = "Also published by another source";
 "Aussi publié par" = "Also published by";
 "Automatique" = "Automatic";
+"Autres Mac" = "Other Macs";
 "Bleu canard" = "Teal";
 "Bleu" = "Blue";
 "Ce flux est déjà dans ta liste." = "This feed is already in your list.";
@@ -212,6 +214,12 @@
 "Supprimer les articles lus après" = "Delete read articles after";
 "Supprimer « %@ » ?" = "Delete “%@”?";
 "Supprimer" = "Delete";
+"Synchronisation" = "Sync";
+"Synchronisation…" = "Syncing…";
+"Synchroniser avec mes autres Mac via iCloud Drive" = "Sync with my other Macs through iCloud Drive";
+"Synchroniser maintenant" = "Sync Now";
+"Synchronisé %@" = "Synced %@";
+"Synchronisés : flux, dossiers, noms personnalisés, règles de filtrage, articles lus et favoris. Non synchronisés : réglages, historique, statistiques et images (chaque Mac télécharge les siennes). Active l'option sur chaque Mac, avec le même compte iCloud. La première fois, macOS peut demander l'autorisation d'accéder à iCloud Drive." = "Synced: feeds, folders, custom names, filter rules, read articles and favorites. Not synced: settings, history, statistics and images (each Mac downloads its own). Turn the option on on each Mac, with the same iCloud account. The first time, macOS may ask for permission to access iCloud Drive.";
 "Séparer des articles similaires" = "Separate from Similar Articles";
 "Taille de l'archive" = "Archive size";
 "Taille du texte de l'article" = "Article text size";
@@ -243,6 +251,9 @@
 "articles lus en moyenne" = "articles read on average";
 "ex. : Bitcoin" = "e.g. Bitcoin";
 "https://exemple.fr/feed.xml" = "https://example.com/feed.xml";
+"iCloud Drive n'est pas activé sur ce Mac (Réglages Système › Identifiant Apple › iCloud › iCloud Drive)." = "iCloud Drive is not turned on on this Mac (System Settings › Apple Account › iCloud › iCloud Drive).";
+"iCloud Drive n'est pas activé sur ce Mac." = "iCloud Drive is not turned on on this Mac.";
+"iCloud Drive" = "iCloud Drive";
 "lus" = "read";
 "publiés" = "published";
 "sur %lld reçus" = "out of %lld received";
