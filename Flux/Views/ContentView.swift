@@ -102,7 +102,7 @@ struct ContentView: View {
                                 .padding(.horizontal, 14)
                                 .padding(.vertical, 8)
                                 Divider()
-                                ArticleDetailView(article: article)
+                                ArticleDetailView(article: article, onSelectArticle: { selectedKeys = [$0] })
                                     .id(article.key)
                             }
                             .background(.background)
@@ -119,7 +119,7 @@ struct ContentView: View {
 
                         Group {
                             if let article = selectedArticle {
-                                ArticleDetailView(article: article)
+                                ArticleDetailView(article: article, onSelectArticle: { selectedKeys = [$0] })
                                     .id(article.key)
                             } else if selectedKeys.count > 1 {
                                 MultiSelectionView(keys: selectedKeys)
@@ -272,7 +272,7 @@ struct ContentView: View {
                 try? await Task.sleep(for: .seconds(delay))
                 guard !Task.isCancelled else { return }
             }
-            article.isRead = true
+            store.setRead(true, [article])   // avec les articles similaires des autres sources
         }
         .onChange(of: keyboard.event) { _, event in
             if event?.command == .back { articleOpen = false }

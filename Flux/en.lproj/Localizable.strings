@@ -60,6 +60,7 @@
 "Articles lus par jour" = "Articles read per day";
 "Articles lus" = "Articles read";
 "Articles publiés il y a plus de" = "Articles published more than";
+"Articles similaires" = "Similar Articles";
 "Articles" = "Articles";
 "Aucun abonnement trouvé dans ce fichier." = "No subscriptions found in this file.";
 "Aucun article actuel ne correspond." = "No current article matches.";
@@ -73,6 +74,9 @@
 "Aucun" = "None";
 "Aucune lecture enregistrée pour l'instant. Un article compte comme lu après 3 secondes d'affichage." = "No reading recorded yet. An article counts as read after being shown for 3 seconds.";
 "Aucune règle. Ajoute un mot-clé pour masquer les articles dont le titre le contient." = "No rules. Add a keyword to hide articles whose title contains it.";
+"Aussi publié par %lld autres sources" = "Also published by %lld other sources";
+"Aussi publié par une autre source" = "Also published by another source";
+"Aussi publié par" = "Also published by";
 "Automatique" = "Automatic";
 "Bleu canard" = "Teal";
 "Bleu" = "Blue";
@@ -92,12 +96,14 @@
 "Enregistrer" = "Save";
 "Exporter les abonnements (OPML)…" = "Export Subscriptions (OPML)…";
 "Extraction des articles :" = "Article extraction:";
+"Faible (moins de regroupements, presque pas d'erreurs)" = "Low (fewer groups, almost no mistakes)";
 "Favori" = "Favorite";
 "Favoris : %lld sur %lld" = "Favorites: %lld of %lld";
 "Favoris" = "Favorites";
 "Filtres" = "Filters";
 "Flux concernés" = "Feeds";
 "Flux" = "Flux";
+"Forte (plus de regroupements, quelques erreurs)" = "High (more groups, a few mistakes)";
 "Gris" = "Gray";
 "Général" = "General";
 "Historique" = "History";
@@ -148,6 +154,7 @@
 "Nom du dossier" = "Folder name";
 "Nom du flux" = "Feed name";
 "Non lus" = "Unread";
+"Normale" = "Normal";
 "Nouveau dossier (⇧⌘N)" = "New Folder (⇧⌘N)";
 "Nouveau dossier" = "New Folder";
 "Nouveau dossier…" = "New Folder…";
@@ -167,9 +174,11 @@
 "Présentation de la liste : liste ou vignettes" = "Article list layout: list or thumbnails";
 "Présentation" = "View";
 "Période" = "Period";
+"Quand plusieurs sources publient la même actualité à moins de 48 heures d'écart, un seul article apparaît, avec « +N » et la liste des autres sources. Le lire marque tout le groupe comme lu. Le regroupement se trompe parfois : clic droit › Séparer des articles similaires." = "When several sources publish the same story within 48 hours, only one article appears, with “+N” and the list of the other sources. Reading it marks the whole group as read. Grouping sometimes gets it wrong: right-click › Separate from Similar Articles.";
 "Quand tu ajoutes un favori, l'article complet et ses images sont rangés dans une archive permanente, indépendante du cache hors ligne : tu peux le relire même si le site le supprime. Retirer un favori libère sa place." = "When you add a favorite, the full article and its images are stored in a permanent archive, separate from the offline cache: you can read it again even if the site deletes it. Removing a favorite frees its space.";
 "Readability.js" = "Readability.js";
 "Rechercher" = "Search";
+"Regrouper les articles similaires de plusieurs sources" = "Group similar articles from several sources";
 "Relancer Flux maintenant ?" = "Relaunch Flux now?";
 "Relancer Flux" = "Relaunch Flux";
 "Relancer" = "Relaunch";
@@ -186,6 +195,7 @@
 "Réglages (⌘,)" = "Settings (⌘,)";
 "Réglages" = "Settings";
 "S'applique aux articles existants et à ceux qui arrivent. Les favoris ne sont jamais marqués automatiquement." = "Applies to existing and incoming articles. Favorites are never marked automatically.";
+"Sensibilité" = "Sensitivity";
 "Sombre" = "Dark";
 "Sources les plus actives" = "Most active sources";
 "Sources les plus lues" = "Most read sources";
@@ -195,6 +205,7 @@
 "Supprimer le dossier" = "Delete Folder";
 "Supprimer le flux" = "Delete Feed";
 "Supprimer les articles lus après" = "Delete read articles after";
+"Séparer des articles similaires" = "Separate from Similar Articles";
 "Taille de l'archive" = "Archive size";
 "Taille maximale du cache d'images" = "Maximum image cache size";
 "Temps de lecture" = "Reading time";

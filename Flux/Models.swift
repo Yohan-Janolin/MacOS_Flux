@@ -177,6 +177,12 @@ final class Article {
     var readingSeconds: Double = 0
     /// Nombre de mots du texte le plus complet disponible (temps de lecture estimé)
     var wordCount: Int = 0
+    /// Groupe d'articles similaires (même actualité dans plusieurs sources)
+    var clusterID: String?
+    /// Article du groupe masqué dans les vues générales (seul le premier publié y apparaît)
+    var isDuplicate: Bool = false
+    /// Séparé à la main de son groupe : ne sera plus jamais regroupé
+    var clusterOptOut: Bool = false
     var imageURL: String?
     var author: String?
     var published: Date

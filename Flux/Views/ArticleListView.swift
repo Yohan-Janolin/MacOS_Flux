@@ -4,6 +4,8 @@ import SwiftUI
 
 struct ArticleListView: View {
     @Query private var articles: [Article]
+    /// Articles similaires masqués : pour afficher « +N » sur l'article qui représente le groupe
+    @Query(filter: #Predicate<Article> { $0.isDuplicate }) private var duplicates: [Article]
     /// Clés des articles sélectionnés (sélection multiple)
     @Binding var selection: Set<String>
     private let filter: SidebarSelection
@@ -36,9 +38,9 @@ struct ArticleListView: View {
         if q.isEmpty {
             switch filter {
             case .all:
-                predicate = #Predicate { !$0.isHidden }
+                predicate = #Predicate { !$0.isHidden && !$0.isDuplicate }
             case .unread:
-                predicate = #Predicate { !$0.isHidden && (!$0.isRead || sticky.contains($0.key)) }
+                predicate = #Predicate { !$0.isHidden && !$0.isDuplicate && (!$0.isRead || sticky.contains($0.key)) }
             case .starred:
                 predicate = #Predicate { $0.isStarred }
             case .history:
@@ -46,19 +48,19 @@ struct ArticleListView: View {
             case .feed(let url):
                 predicate = #Predicate { !$0.isHidden && $0.feedURL == url }
             case .folder:
-                predicate = #Predicate { !$0.isHidden && urls.contains($0.feedURL) }
+                predicate = #Predicate { !$0.isHidden && !$0.isDuplicate && urls.contains($0.feedURL) }
             }
         } else {
             // Même filtres, restreints aux articles dont le titre ou le texte contient la recherche
             switch filter {
             case .all:
                 predicate = #Predicate {
-                    !$0.isHidden
+                    !$0.isHidden && !$0.isDuplicate
                         && ($0.title.localizedStandardContains(q) || $0.searchText.localizedStandardContains(q))
                 }
             case .unread:
                 predicate = #Predicate {
-                    !$0.isHidden && (!$0.isRead || sticky.contains($0.key))
+                    !$0.isHidden && !$0.isDuplicate && (!$0.isRead || sticky.contains($0.key))
                         && ($0.title.localizedStandardContains(q) || $0.searchText.localizedStandardContains(q))
                 }
             case .starred:
@@ -78,7 +80,7 @@ struct ArticleListView: View {
                 }
             case .folder:
                 predicate = #Predicate {
-                    !$0.isHidden && urls.contains($0.feedURL)
+                    !$0.isHidden && !$0.isDuplicate && urls.contains($0.feedURL)
                         && ($0.title.localizedStandardContains(q) || $0.searchText.localizedStandardContains(q))
                 }
             }
@@ -136,7 +138,8 @@ struct ArticleListView: View {
     // hauteur des lignes jamais affichées avec une valeur par défaut, puis la
     // corrige au défilement, ce qui faisait sauter la liste en bas.
     var body: some View {
-        ScrollViewReader { proxy in
+        let counts = otherSourceCounts
+        return ScrollViewReader { proxy in
             ScrollView {
                 if isGrid {
                     // Toutes les cartes ont la même taille : la hauteur totale reste stable
@@ -145,14 +148,14 @@ struct ArticleListView: View {
                         spacing: Self.gridSpacing
                     ) {
                         ForEach(articles) { article in
-                            card(for: article)
+                            card(for: article, counts: counts)
                         }
                     }
                     .padding(Self.gridPadding)
                 } else {
                     LazyVStack(spacing: 0) {
                         ForEach(articles) { article in
-                            row(for: article)
+                            row(for: article, counts: counts)
                         }
                     }
                     .padding(.vertical, 6)
@@ -198,9 +201,19 @@ struct ArticleListView: View {
         }
     }
 
-    private func row(for article: Article) -> some View {
+    private var otherSourceCounts: [String: Int] {
+        Dictionary(grouping: duplicates.compactMap(\.clusterID), by: { $0 }).mapValues(\.count)
+    }
+
+    /// Nombre d'autres sources pour l'article qui représente un groupe
+    private func otherSources(_ article: Article, _ counts: [String: Int]) -> Int {
+        guard !article.isDuplicate, let cluster = article.clusterID else { return 0 }
+        return counts[cluster] ?? 0
+    }
+
+    private func row(for article: Article, counts: [String: Int]) -> some View {
         let isSelected = selection.contains(article.key)
-        return ArticleRow(article: article, showSummary: showSummary)
+        return ArticleRow(article: article, showSummary: showSummary, otherSources: otherSources(article, counts))
             .padding(.horizontal, 10)
             .frame(maxWidth: .infinity, alignment: .leading)
             .frame(height: showSummary ? Self.rowHeight : Self.compactRowHeight)
@@ -222,9 +235,9 @@ struct ArticleListView: View {
             .id(article.key)
     }
 
-    private func card(for article: Article) -> some View {
+    private func card(for article: Article, counts: [String: Int]) -> some View {
         let isSelected = selection.contains(article.key)
-        return ArticleCard(article: article)
+        return ArticleCard(article: article, otherSources: otherSources(article, counts))
             .padding(6)
             .background {
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
@@ -353,6 +366,10 @@ struct ArticleListView: View {
         Button(allStarred ? String(localized: "Retirer des favoris") : String(localized: "Ajouter aux favoris")) {
             store.setStarred(!allStarred, targets)
         }
+        if targets.count == 1, article.clusterID != nil {
+            Divider()
+            Button("Séparer des articles similaires") { store.detachFromCluster(article) }
+        }
         if targets.count == 1, let link = article.link, let url = URL(string: link) {
             Divider()
             Button("Ouvrir dans le navigateur") { NSWorkspace.shared.open(url) }
@@ -367,6 +384,8 @@ struct ArticleListView: View {
 struct ArticleRow: View {
     let article: Article
     var showSummary = true
+    /// Autres sources ayant publié la même actualité
+    var otherSources = 0
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
@@ -379,6 +398,9 @@ struct ArticleRow: View {
                     }
                     Text(article.feed?.displayTitle ?? "")
                         .lineLimit(1)
+                    if otherSources > 0 {
+                        OtherSourcesBadge(count: otherSources)
+                    }
                     Spacer(minLength: 4)
                     if article.isStarred {
                         Image(systemName: "star.fill").foregroundStyle(.yellow)
@@ -437,6 +459,7 @@ struct Thumbnail: View {
 /// Carte du mode vignettes : l'image, et le titre dessous
 struct ArticleCard: View {
     let article: Article
+    var otherSources = 0
 
     var body: some View {
         VStack(alignment: .leading, spacing: 7) {
@@ -452,6 +475,15 @@ struct ArticleCard: View {
                     }
                 }
                 .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
+                .overlay(alignment: .topLeading) {
+                    if otherSources > 0 {
+                        OtherSourcesBadge(count: otherSources)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 3)
+                            .background(.ultraThinMaterial, in: Capsule())
+                            .padding(6)
+                    }
+                }
                 .overlay(alignment: .topTrailing) {
                     if article.isStarred {
                         Image(systemName: "star.fill")
@@ -481,6 +513,25 @@ struct ArticleCard: View {
         Image(systemName: "newspaper")
             .font(.title2)
             .foregroundStyle(.tertiary)
+    }
+}
+
+/// « +2 » : la même actualité a aussi été publiée par d'autres sources
+struct OtherSourcesBadge: View {
+    let count: Int
+
+    var body: some View {
+        Label {
+            Text(verbatim: "+\(count)")
+        } icon: {
+            Image(systemName: "square.stack")
+        }
+            .labelStyle(.titleAndIcon)
+            .font(.caption2.weight(.semibold))
+            .foregroundStyle(.secondary)
+            .help(count == 1
+                  ? String(localized: "Aussi publié par une autre source")
+                  : String(localized: "Aussi publié par \(count) autres sources"))
     }
 }
 

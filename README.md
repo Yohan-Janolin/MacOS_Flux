@@ -59,6 +59,14 @@ Flux is a native SwiftUI app, available in English and French, in light and dark
 - Clean reading layout, light or dark, with three text widths (narrow, wide, full width). Links open in your default browser.
 - **Limitations:** articles reserved for a site's subscribers stay cut, since the site itself doesn't serve the rest. Pages built entirely in JavaScript can be extracted poorly: the “Open in Browser” button is there for those.
 
+### 🧲 Similar articles
+
+When several sources publish the same story within 48 hours, Flux groups them: only one article appears in the lists, with a “+N” badge, and the article shows the other sources so you can read their version. Reading it marks the whole group as read.
+
+- Articles are grouped when they point to the same link, or when their titles share at least two significant words and are close enough, word for word or in meaning (sentence embeddings from Apple's NaturalLanguage framework, computed on your Mac).
+- Settings › Reading: on by default, with three sensitivity levels.
+- **Limitations:** grouping is never perfect. It misses some duplicates whose titles are worded very differently, and can occasionally group two different stories: right-click › Separate from Similar Articles. A single feed's view always shows all its articles.
+
 ### 🚫 Keyword filters
 
 Rules (Settings › Filters) exclude articles by a keyword in their title, ignoring case and accents: **hide** the article, or simply **mark it as read**. A rule applies to all feeds or to a single one, to the whole word or anywhere in the title, and shows how many articles it affects (with a preview before you save it).

@@ -93,6 +93,7 @@ final class FeedStore {
         applyAutoMarkRead(save: false)
         prune()
         if context.hasChanges { try? context.save() }
+        groupDuplicates(added)
         guard !isOffline else { return }
         await fillMissingImages(added)
         // En tâche séparée : l'actualisation (et son indicateur) se termine sans attendre
@@ -114,6 +115,7 @@ final class FeedStore {
         let result = await Self.fetchFeed(feed.url)
         let added = apply(result, to: feed)
         if context.hasChanges { try? context.save() }
+        groupDuplicates(added)
         await fillMissingImages(added)
     }
 
@@ -267,8 +269,15 @@ final class FeedStore {
         try? context.save()
     }
 
+    /// Marque comme lu / non lu, avec les articles similaires des autres sources
     func setRead(_ read: Bool, _ articles: [Article]) {
-        for article in articles where article.isRead != read { article.isRead = read }
+        var targets = articles
+        var seenClusters = Set<String>()
+        for article in articles {
+            guard let cluster = article.clusterID, seenClusters.insert(cluster).inserted else { continue }
+            targets += clusterMembers(cluster)
+        }
+        for article in targets where article.isRead != read { article.isRead = read }
         try? context.save()
     }
 
@@ -379,6 +388,136 @@ final class FeedStore {
         return (try? context.fetchCount(FetchDescriptor<Article>(predicate: #Predicate { $0.filteredBy == uid }))) ?? 0
     }
 
+    // MARK: - Articles similaires
+
+    func clusterMembers(_ cluster: String) -> [Article] {
+        let predicate = #Predicate<Article> { $0.clusterID == cluster }
+        return (try? context.fetch(FetchDescriptor(predicate: predicate,
+                                                   sortBy: [SortDescriptor(\.published)]))) ?? []
+    }
+
+    /// Autres articles du même groupe que `article`
+    func similarArticles(to article: Article) -> [Article] {
+        guard let cluster = article.clusterID else { return [] }
+        return clusterMembers(cluster).filter { $0.key != article.key }
+    }
+
+    /// Rattache les nouveaux articles aux articles similaires des autres sources (48 h autour)
+    func groupDuplicates(_ newArticles: [Article]) {
+        guard UserDefaults.standard.bool(forKey: Prefs.groupDuplicates) else { return }
+        if !UserDefaults.standard.bool(forKey: Prefs.duplicatesInitialized) {
+            UserDefaults.standard.set(true, forKey: Prefs.duplicatesInitialized)
+            regroupRecentDuplicates()
+            return
+        }
+        let candidates = newArticles.filter { !$0.isDeleted && !$0.isHidden && !$0.clusterOptOut && $0.clusterID == nil }
+        guard !candidates.isEmpty else { return }
+
+        let earliest = (candidates.map(\.published).min() ?? .now).addingTimeInterval(-DuplicateDetector.window)
+        let poolPredicate = #Predicate<Article> { $0.published >= earliest && !$0.isHidden && !$0.clusterOptOut }
+        let pool = (try? context.fetch(FetchDescriptor(predicate: poolPredicate))) ?? []
+        cluster(candidates, within: pool)
+    }
+
+    /// Recalcule les groupes des 3 derniers jours (réglages modifiés, premier lancement)
+    func regroupRecentDuplicates() {
+        // Option désactivée : on défait tous les groupes, anciens compris
+        guard UserDefaults.standard.bool(forKey: Prefs.groupDuplicates) else {
+            let clustered = (try? context.fetch(FetchDescriptor<Article>(
+                predicate: #Predicate { $0.clusterID != nil }))) ?? []
+            for article in clustered {
+                article.clusterID = nil
+                article.isDuplicate = false
+            }
+            try? context.save()
+            return
+        }
+        let since = Date.now.addingTimeInterval(-3 * 86_400)
+        let recent = (try? context.fetch(FetchDescriptor<Article>(
+            predicate: #Predicate { $0.published >= since }))) ?? []
+        for article in recent where article.clusterID != nil {
+            article.clusterID = nil
+            article.isDuplicate = false
+        }
+        if UserDefaults.standard.bool(forKey: Prefs.groupDuplicates) {
+            let usable = recent.filter { !$0.isHidden && !$0.clusterOptOut }
+            cluster(usable.sorted { $0.published < $1.published }, within: usable)
+        }
+        try? context.save()
+    }
+
+    private func cluster(_ candidates: [Article], within pool: [Article]) {
+        let sensitivity = DuplicateDetector.Sensitivity(
+            rawValue: UserDefaults.standard.integer(forKey: Prefs.duplicateSensitivity)) ?? .normal
+        let detector = DuplicateDetector(sensitivity: sensitivity)
+
+        // Signatures et index « mot → articles » pour ne comparer que ce qui partage des mots
+        var signatures: [String: DuplicateDetector.Signature] = [:]
+        var byWord: [String: [Article]] = [:]
+        var byLink: [String: [Article]] = [:]
+        for article in pool {
+            let signature = detector.signature(title: article.title, link: article.link)
+            signatures[article.key] = signature
+            for word in signature.words { byWord[word, default: []].append(article) }
+            if let link = signature.link { byLink[link, default: []].append(article) }
+        }
+
+        var touched = Set<String>()
+        for article in candidates {
+            guard let signature = signatures[article.key] else { continue }
+            var possible: [String: Article] = [:]
+            for word in signature.words { for other in byWord[word] ?? [] { possible[other.key] = other } }
+            if let link = signature.link { for other in byLink[link] ?? [] { possible[other.key] = other } }
+
+            var best: (article: Article, score: Double)?
+            for other in possible.values {
+                guard other.key != article.key, other.feedURL != article.feedURL,
+                      abs(other.published.timeIntervalSince(article.published)) <= DuplicateDetector.window,
+                      other.clusterID == nil || other.clusterID != article.clusterID,
+                      let otherSignature = signatures[other.key],
+                      let score = detector.score(signature, otherSignature) else { continue }
+                if score > (best?.score ?? 0) { best = (other, score) }
+            }
+            guard let match = best?.article else { continue }
+            let cluster = match.clusterID ?? article.clusterID ?? UUID().uuidString
+            if let old = article.clusterID, old != cluster {
+                for member in pool where member.clusterID == old { member.clusterID = cluster }
+            }
+            article.clusterID = cluster
+            match.clusterID = cluster
+            touched.insert(cluster)
+        }
+
+        // Dans chaque groupe, le premier publié représente l'actualité ; les autres suivent son état de lecture
+        for cluster in touched {
+            let members = clusterMembers(cluster)
+            guard let lead = members.first else { continue }
+            for member in members {
+                member.isDuplicate = member.key != lead.key
+                if member.isDuplicate, lead.isRead, !member.isRead { member.isRead = true }
+            }
+        }
+        if !touched.isEmpty { try? context.save() }
+    }
+
+    /// Sort un article de son groupe ; il ne sera plus regroupé
+    func detachFromCluster(_ article: Article) {
+        guard let cluster = article.clusterID else { return }
+        article.clusterID = nil
+        article.isDuplicate = false
+        article.clusterOptOut = true
+        let remaining = clusterMembers(cluster)
+        if remaining.count <= 1 {
+            for member in remaining {
+                member.clusterID = nil
+                member.isDuplicate = false
+            }
+        } else {
+            for (index, member) in remaining.enumerated() { member.isDuplicate = index > 0 }
+        }
+        try? context.save()
+    }
+
     // MARK: - Archive des favoris
 
     /// Progression de l'archivage des favoris (nil = rien en cours)
@@ -455,7 +594,7 @@ final class FeedStore {
         defer { offlineStatus = nil }
 
         var descriptor = FetchDescriptor<Article>(
-            predicate: #Predicate { (!$0.isRead && !$0.isHidden) || $0.isStarred },
+            predicate: #Predicate { (!$0.isRead && !$0.isHidden && !$0.isDuplicate) || $0.isStarred },
             sortBy: [SortDescriptor(\.published, order: .reverse)]
         )
         descriptor.fetchLimit = 400

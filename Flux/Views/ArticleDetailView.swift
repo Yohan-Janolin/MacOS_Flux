@@ -3,6 +3,8 @@ import SwiftUI
 
 struct ArticleDetailView: View {
     let article: Article
+    /// Ouvre un autre article (les autres sources de la même actualité)
+    var onSelectArticle: ((String) -> Void)? = nil
 
     @State private var showFull = false
     @Environment(FeedStore.self) private var store
@@ -19,6 +21,17 @@ struct ArticleDetailView: View {
     }
 
     var body: some View {
+        VStack(spacing: 0) {
+            let similar = store.similarArticles(to: article)
+            if !similar.isEmpty {
+                SimilarArticlesBar(articles: similar) { onSelectArticle?($0) }
+                Divider()
+            }
+            reader
+        }
+    }
+
+    private var reader: some View {
         ArticleWebView(html: ReaderTemplate.render(article, body: bodyHTML, width: readerWidth), baseURL: articleURL)
             .overlay(alignment: .top) {
                 if loading {
@@ -136,3 +149,37 @@ struct ArticleDetailView: View {
         }
     }
 }
+
+/// « Aussi publié par » : les autres sources de la même actualité
+struct SimilarArticlesBar: View {
+    let articles: [Article]
+    let onSelect: (String) -> Void
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "square.stack")
+                .foregroundStyle(.secondary)
+            Text("Aussi publié par")
+                .foregroundStyle(.secondary)
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 6) {
+                    ForEach(articles) { article in
+                        Button {
+                            onSelect(article.key)
+                        } label: {
+                            Text(article.feed?.displayTitle ?? URL(string: article.feedURL)?.host() ?? "")
+                                .lineLimit(1)
+                        }
+                        .buttonStyle(.bordered)
+                        .controlSize(.small)
+                        .help(article.title)
+                    }
+                }
+            }
+        }
+        .font(.callout)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 7)
+    }
+}
+

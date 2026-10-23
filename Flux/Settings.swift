@@ -24,6 +24,11 @@ enum Prefs {
     static let gridFullWidth = "gridFullWidth"
     /// Archiver les favoris (article complet + images) dans un stockage permanent
     static let archiveFavorites = "archiveFavorites"
+    /// Regrouper les articles similaires publiés par plusieurs sources
+    static let groupDuplicates = "groupDuplicates"
+    /// DuplicateDetector.Sensitivity.rawValue
+    static let duplicateSensitivity = "duplicateSensitivity"
+    static let duplicatesInitialized = "duplicatesInitialized"
 
     static let defaults: [String: Any] = [
         autoMarkReadEnabled: false,
@@ -38,6 +43,8 @@ enum Prefs {
         showSummary: true,
         gridFullWidth: false,
         archiveFavorites: true,
+        groupDuplicates: true,
+        duplicateSensitivity: 1,
     ]
 
     static func register() {

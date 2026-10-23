@@ -59,6 +59,14 @@ Flux est une app SwiftUI native, en français et en anglais, en mode clair et so
 - Mise en page de lecture soignée, claire ou sombre, avec trois largeurs de texte (étroite, large, toute la largeur). Les liens s'ouvrent dans ton navigateur par défaut.
 - **Limites :** les articles réservés aux abonnés d'un site restent tronqués, puisque le site lui-même ne fournit pas la suite. Les pages entièrement construites en JavaScript peuvent être mal extraites : le bouton « Ouvrir dans le navigateur » est là pour elles.
 
+### 🧲 Articles similaires
+
+Quand plusieurs sources publient la même actualité à moins de 48 heures d'écart, Flux les regroupe : un seul article apparaît dans les listes, avec un badge « +N », et l'article affiche les autres sources pour lire leur version. Le lire marque tout le groupe comme lu.
+
+- Les articles sont regroupés quand ils pointent vers le même lien, ou quand leurs titres partagent au moins deux mots importants et sont assez proches, mot à mot ou par le sens (plongements de phrases du framework NaturalLanguage d'Apple, calculés sur ton Mac).
+- Réglages › Lecture : activé par défaut, avec trois niveaux de sensibilité.
+- **Limites :** le regroupement n'est jamais parfait. Il rate certains doublons dont les titres sont formulés très différemment, et peut parfois réunir deux actualités distinctes : clic droit › Séparer des articles similaires. La vue d'un flux affiche toujours tous ses articles.
+
 ### 🚫 Filtres par mots-clés
 
 Des règles (Réglages › Filtres) excluent les articles selon un mot-clé dans leur titre, sans tenir compte des majuscules ni des accents : **masquer** l'article, ou simplement le **marquer comme lu**. Une règle vaut pour tous les flux ou pour un seul, pour le mot entier ou n'importe où dans le titre, et indique combien d'articles elle touche (avec un aperçu avant d'enregistrer).

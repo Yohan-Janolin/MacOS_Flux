@@ -38,7 +38,7 @@ struct SidebarView: View {
                 Label("Tous les articles", systemImage: "tray.full")
                     .tag(SidebarSelection.all)
                 Label("Non lus", systemImage: "circle.inset.filled")
-                    .badge(unread.count)
+                    .badge(unread.filter { !$0.isDuplicate }.count)
                     .tag(SidebarSelection.unread)
                 Label("Favoris", systemImage: "star")
                     .tag(SidebarSelection.starred)

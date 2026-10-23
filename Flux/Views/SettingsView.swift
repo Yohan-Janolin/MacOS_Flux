@@ -13,6 +13,8 @@ struct SettingsView: View {
     @AppStorage(Prefs.readerWidth) private var readerWidth = "narrow"
     @AppStorage(Prefs.gridFullWidth) private var gridFullWidth = false
     @AppStorage(Prefs.archiveFavorites) private var archiveFavorites = true
+    @AppStorage(Prefs.groupDuplicates) private var groupDuplicates = true
+    @AppStorage(Prefs.duplicateSensitivity) private var duplicateSensitivity = 1
     @State private var archiveSize: Int64?
     @State private var pendingArchive = 0
     @AppStorage(Prefs.offlineEnabled) private var offlineEnabled = false
@@ -113,6 +115,21 @@ struct SettingsView: View {
                     Text("Lecture")
                 } footer: {
                     Text("S'applique aux articles existants et à ceux qui arrivent. Les favoris ne sont jamais marqués automatiquement.")
+                        .foregroundStyle(.secondary)
+                }
+
+                Section {
+                    Toggle("Regrouper les articles similaires de plusieurs sources", isOn: $groupDuplicates)
+                    Picker("Sensibilité", selection: $duplicateSensitivity) {
+                        ForEach(DuplicateDetector.Sensitivity.allCases) { level in
+                            Text(level.label).tag(level.rawValue)
+                        }
+                    }
+                    .disabled(!groupDuplicates)
+                } header: {
+                    Text("Articles similaires")
+                } footer: {
+                    Text("Quand plusieurs sources publient la même actualité à moins de 48 heures d'écart, un seul article apparaît, avec « +N » et la liste des autres sources. Le lire marque tout le groupe comme lu. Le regroupement se trompe parfois : clic droit › Séparer des articles similaires.")
                         .foregroundStyle(.secondary)
                 }
 
@@ -242,6 +259,8 @@ struct SettingsView: View {
             Text("La nouvelle langue sera appliquée au redémarrage de l'app.")
         }
         .task { await updateCacheSize() }
+        .onChange(of: groupDuplicates) { store.regroupRecentDuplicates() }
+        .onChange(of: duplicateSensitivity) { store.regroupRecentDuplicates() }
         .onChange(of: archiveFavorites) {
             if archiveFavorites { Task { await store.archiveFavorites() } }
         }
