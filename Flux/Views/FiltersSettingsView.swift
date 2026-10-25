@@ -39,6 +39,8 @@ struct FiltersSettingsView: View {
             }
         }
         .formStyle(.grouped)
+        // Hauteur selon le nombre de règles (une ligne ≈ 52 pt)
+        .settingsTab(idealHeight: 175 + CGFloat(max(rules.count, 1) - 1) * 52 + (rules.isEmpty ? 0 : 8))
         .sheet(isPresented: $showNew) {
             FilterRuleSheet(rule: nil, feeds: sortedFeeds) { keyword, wholeWord, action, feedURL in
                 store.addFilter(keyword: keyword, wholeWord: wholeWord, action: action, feedURL: feedURL)

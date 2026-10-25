@@ -5,6 +5,14 @@ struct SyncSettingsView: View {
     @Environment(SyncEngine.self) private var sync
     @AppStorage(Prefs.syncEnabled) private var enabled = false
 
+    /// Hauteur selon l'état : option seule, ou avec la ligne d'état et la liste des autres Mac
+    private var idealHeight: CGFloat {
+        guard enabled, SyncEngine.isICloudDriveAvailable else {
+            return SyncEngine.isICloudDriveAvailable ? 185 : 235
+        }
+        return 185 + 52 + 70 + CGFloat(max(sync.otherDevices.count, 1)) * 44
+    }
+
     var body: some View {
         Form {
             Section {
@@ -63,6 +71,7 @@ struct SyncSettingsView: View {
             }
         }
         .formStyle(.grouped)
+        .settingsTab(idealHeight: idealHeight)
         .onChange(of: enabled) {
             if enabled {
                 Task { await sync.sync() }

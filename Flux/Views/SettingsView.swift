@@ -86,7 +86,7 @@ struct SettingsView: View {
                 }
             }
             .formStyle(.grouped)
-            .settingsTab(idealHeight: 460)
+            .settingsTab(idealHeight: languageChanged ? 365 : 320)
             .tabItem { Label("Général", systemImage: "gearshape") }
 
             Form {
@@ -160,11 +160,10 @@ struct SettingsView: View {
                 }
             }
             .formStyle(.grouped)
-            .settingsTab(idealHeight: 690)
+            .settingsTab(idealHeight: 550)
             .tabItem { Label("Lecture", systemImage: "book") }
 
-            FiltersSettingsView()
-                .settingsTab(idealHeight: 480)
+            FiltersSettingsView()   // hauteur calculée dans la vue (selon le nombre de règles)
                 .tabItem { Label("Filtres", systemImage: "line.3.horizontal.decrease.circle") }
 
             Form {
@@ -258,11 +257,10 @@ struct SettingsView: View {
                 }
             }
             .formStyle(.grouped)
-            .settingsTab(idealHeight: 615)
+            .settingsTab(idealHeight: (store.archiveStatus != nil || (archiveFavorites && pendingArchive > 0)) ? 630 : 585)
             .tabItem { Label("Stockage", systemImage: "internaldrive") }
 
-            SyncSettingsView()
-                .settingsTab(idealHeight: 480)
+            SyncSettingsView()      // hauteur calculée dans la vue (selon l'état et les autres Mac)
                 .tabItem { Label("Synchronisation", systemImage: "icloud") }
         }
         .onChange(of: appearance) {
@@ -328,9 +326,9 @@ struct SettingsView: View {
 }
 
 extension View {
-    /// Onglet des réglages : taille fixe propre à chaque onglet, prévue pour tout afficher
-    /// sans défilement. La fenêtre prend la taille de l'onglet affiché (avec animation),
-    /// sans dépasser 85 % de la hauteur de l'écran (au-delà, l'onglet défile).
+    /// Onglet des réglages : 600 pt de large et la hauteur de son contenu (mesurée sur
+    /// captures, plus les lignes qui apparaissent selon l'état). La fenêtre prend la taille
+    /// de l'onglet affiché, sans dépasser 85 % de la hauteur de l'écran (au-delà, il défile).
     func settingsTab(idealHeight: CGFloat) -> some View {
         let screen = NSScreen.main?.visibleFrame.height ?? 900
         return frame(width: 600, height: min(idealHeight, screen * 0.85))
