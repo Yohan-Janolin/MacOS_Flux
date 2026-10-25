@@ -121,10 +121,10 @@ struct StatsView: View {
 
                 HStack(alignment: .top, spacing: 16) {
                     section(String(localized: "Sources les plus lues")) {
-                        ranking(stats.mostRead, unit: String(localized: "lus"))
+                        ranking(stats.mostRead) { $0 == 1 ? String(localized: "1 lu") : String(localized: "\($0) lus") }
                     }
                     section(String(localized: "Sources les plus actives")) {
-                        ranking(stats.mostActive, unit: String(localized: "publiés"))
+                        ranking(stats.mostActive) { $0 == 1 ? String(localized: "1 publié") : String(localized: "\($0) publiés") }
                     }
                 }
 
@@ -163,7 +163,7 @@ struct StatsView: View {
     }
 
     /// Classement en barres horizontales, nom et valeur écrits à côté
-    private func ranking(_ rows: [Stats.Row], unit: String) -> some View {
+    private func ranking(_ rows: [Stats.Row], label: @escaping (Int) -> String) -> some View {
         Group {
             if rows.isEmpty {
                 empty
@@ -175,7 +175,7 @@ struct StatsView: View {
                             HStack {
                                 Text(row.name).lineLimit(1)
                                 Spacer()
-                                Text("\(row.count) \(unit)")
+                                Text(label(row.count))
                                     .foregroundStyle(.secondary)
                                     .monospacedDigit()
                             }
@@ -187,7 +187,7 @@ struct StatsView: View {
                             }
                             .frame(height: 6)
                         }
-                        .help("\(row.name) : \(row.count) \(unit)")
+                        .help(Text(verbatim: "\(row.name) : \(label(row.count))"))
                     }
                 }
             }
@@ -208,7 +208,7 @@ struct StatsView: View {
     private func duration(_ seconds: Double) -> String {
         let formatter = DateComponentsFormatter()
         formatter.allowedUnits = seconds >= 3600 ? [.hour, .minute] : [.minute]
-        formatter.unitsStyle = .abbreviated
+        formatter.unitsStyle = .short   // « 14 min », « 1 h 5 min »
         formatter.zeroFormattingBehavior = .dropLeading
         return formatter.string(from: max(seconds, 0)) ?? "0"
     }

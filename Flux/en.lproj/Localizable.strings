@@ -254,8 +254,10 @@
 "iCloud Drive n'est pas activé sur ce Mac (Réglages Système › Identifiant Apple › iCloud › iCloud Drive)." = "iCloud Drive is not turned on on this Mac (System Settings › Apple Account › iCloud › iCloud Drive).";
 "iCloud Drive n'est pas activé sur ce Mac." = "iCloud Drive is not turned on on this Mac.";
 "iCloud Drive" = "iCloud Drive";
-"lus" = "read";
-"publiés" = "published";
+"1 lu" = "1 read";
+"%lld lus" = "%lld read";
+"1 publié" = "1 published";
+"%lld publiés" = "%lld published";
 "sur %lld reçus" = "out of %lld received";
 "temps d'affichage" = "time on screen";
 "À propos de Flux" = "About Flux";

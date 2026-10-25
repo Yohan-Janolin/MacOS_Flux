@@ -23,17 +23,19 @@ Tu ajoutes tes flux toi-même (pas d'annuaire, pas de compte, pas de recommandat
 
 Flux est une app SwiftUI native, en français et en anglais, en mode clair et sombre.
 
-<!--
 ## 📸 Captures d'écran
 
 <p align="center">
-  <img src="docs/screenshots/main.png" width="800" alt="Fenêtre principale de Flux" />
+  <img src="docs/home_grid_fr.png" width="800" alt="Fenêtre principale de Flux" />
 </p>
 
-| Liste | Vignettes | Réglages |
-|:---:|:---:|:---:|
-| <img src="docs/screenshots/list.png" width="260" alt="Vue liste" /> | <img src="docs/screenshots/grid.png" width="260" alt="Vue vignettes" /> | <img src="docs/screenshots/settings.png" width="260" alt="Réglages" /> |
--->
+| Liste avec miniatures | Vignettes en plein écran |
+|:---:|:---:|
+| <img src="docs/home_list_fr.png" width="400" alt="Liste avec miniatures" /> | <img src="docs/home_grid-only_fr.png" width="400" alt="Vignettes en plein écran" /> |
+| **Articles similaires regroupés** | **Statistiques de lecture** |
+| <img src="docs/similar_articles_fr.png" width="400" alt="Articles similaires regroupés" /> | <img src="docs/reading_statistics_fr.png" width="400" alt="Statistiques de lecture" /> |
+| **Réglages de lecture** | **Règles de filtrage** |
+| <img src="docs/parameter_reading_fr.png" width="300" alt="Réglages de lecture" /> | <img src="docs/exclusion_rules_fr.png" width="300" alt="Règles de filtrage" /> |
 
 ## ✨ Fonctionnalités
 
