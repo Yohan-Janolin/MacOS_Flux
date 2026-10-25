@@ -26,16 +26,16 @@ Flux is a native SwiftUI app, available in English and French, in light and dark
 ## 📸 Screenshots
 
 <p align="center">
-  <img src="docs/home_grid_fr.png" width="800" alt="Flux main window" />
+  <img src="docs/home_grid_en.png" width="800" alt="Flux main window" />
 </p>
 
 | List with thumbnails | Full-width thumbnails |
 |:---:|:---:|
-| <img src="docs/home_list_fr.png" width="400" alt="List with thumbnails" /> | <img src="docs/home_grid-only_fr.png" width="400" alt="Full-width thumbnails" /> |
+| <img src="docs/home_list_en.png" width="400" alt="List with thumbnails" /> | <img src="docs/home_grid-only_en.png" width="400" alt="Full-width thumbnails" /> |
 | **Similar articles grouped** | **Reading statistics** |
-| <img src="docs/similar_articles_fr.png" width="400" alt="Similar articles grouped" /> | <img src="docs/reading_statistics_fr.png" width="400" alt="Reading statistics" /> |
+| <img src="docs/similar_articles_en.png" width="400" alt="Similar articles grouped" /> | <img src="docs/reading_statistics_en.png" width="400" alt="Reading statistics" /> |
 | **Reading settings** | **Filter rules** |
-| <img src="docs/parameter_reading_fr.png" width="300" alt="Reading settings" /> | <img src="docs/exclusion_rules_fr.png" width="300" alt="Filter rules" /> |
+| <img src="docs/parameter_reading_en.png" width="300" alt="Reading settings" /> | <img src="docs/exclusion_rules_en.png" width="300" alt="Filter rules" /> |
 
 ## ✨ Features
 
