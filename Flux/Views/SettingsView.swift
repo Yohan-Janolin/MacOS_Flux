@@ -258,7 +258,7 @@ struct SettingsView: View {
                 }
             }
             .formStyle(.grouped)
-            .settingsTab(idealHeight: 760)
+            .settingsTab(idealHeight: 615)
             .tabItem { Label("Stockage", systemImage: "internaldrive") }
 
             SyncSettingsView()
