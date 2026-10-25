@@ -86,7 +86,7 @@ struct SettingsView: View {
                 }
             }
             .formStyle(.grouped)
-            .settingsTab()
+            .settingsTab(idealHeight: 460)
             .tabItem { Label("Général", systemImage: "gearshape") }
 
             Form {
@@ -160,11 +160,11 @@ struct SettingsView: View {
                 }
             }
             .formStyle(.grouped)
-            .settingsTab()
+            .settingsTab(idealHeight: 690)
             .tabItem { Label("Lecture", systemImage: "book") }
 
             FiltersSettingsView()
-                .settingsTab()
+                .settingsTab(idealHeight: 480)
                 .tabItem { Label("Filtres", systemImage: "line.3.horizontal.decrease.circle") }
 
             Form {
@@ -258,11 +258,11 @@ struct SettingsView: View {
                 }
             }
             .formStyle(.grouped)
-            .settingsTab()
+            .settingsTab(idealHeight: 760)
             .tabItem { Label("Stockage", systemImage: "internaldrive") }
 
             SyncSettingsView()
-                .settingsTab()
+                .settingsTab(idealHeight: 480)
                 .tabItem { Label("Synchronisation", systemImage: "icloud") }
         }
         .onChange(of: appearance) {
@@ -328,13 +328,13 @@ struct SettingsView: View {
 }
 
 extension View {
-    /// Onglet des réglages : largeur fixe, hauteur adaptée au contenu.
-    /// La fenêtre des réglages prend la taille de l'onglet affiché (avec animation),
-    /// sans dépasser 85 % de la hauteur de l'écran : au-delà, l'onglet défile.
-    func settingsTab() -> some View {
-        frame(width: 600)
-            .frame(maxHeight: (NSScreen.main?.visibleFrame.height ?? 900) * 0.85)
-            .fixedSize(horizontal: false, vertical: true)
+    /// Onglet des réglages : chaque onglet a une hauteur prévue pour tout afficher sans
+    /// défilement ; la fenêtre la prend en changeant d'onglet. Elle reste redimensionnable
+    /// (au cas où le contenu grandit : nombreuses règles, autre langue…) et ne dépasse
+    /// jamais 85 % de la hauteur de l'écran.
+    func settingsTab(idealHeight: CGFloat) -> some View {
+        let screen = NSScreen.main?.visibleFrame.height ?? 900
+        return frame(minWidth: 600, idealWidth: 620, maxWidth: .infinity,
+                     minHeight: 320, idealHeight: min(idealHeight, screen * 0.85), maxHeight: .infinity)
     }
 }
-
