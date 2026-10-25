@@ -174,6 +174,9 @@ Automatic updates will come in a future version. In the meantime, download the n
 
 ## 📝 Changelog
 
+### 0.3.1
+- New signing certificate and bundle identifier. Your feeds, articles and favorites are kept; settings are reset.
+
 ### 0.3.0
 - First downloadable version (DMG).
 - Sync between Macs through iCloud Drive: feeds, folders, names, filter rules, read articles and favorites.

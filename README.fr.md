@@ -174,6 +174,9 @@ Les mises à jour automatiques arriveront dans une prochaine version. En attenda
 
 ## 📝 Historique des versions
 
+### 0.3.1
+- Nouveau certificat de signature et nouvel identifiant d'app. Tes flux, articles et favoris sont conservés ; les réglages sont réinitialisés.
+
 ### 0.3.0
 - Première version téléchargeable (DMG).
 - Synchronisation entre Mac par iCloud Drive : flux, dossiers, noms, règles de filtrage, articles lus et favoris.
