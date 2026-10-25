@@ -23,6 +23,9 @@ Tu ajoutes tes flux toi-même (pas d'annuaire, pas de compte, pas de recommandat
 
 Flux est une app SwiftUI native, en français et en anglais, en mode clair et sombre.
 
+> [!NOTE]
+> **Développé avec l'aide d'une IA.** Flux est un projet perso que j'ai construit avec [Claude](https://claude.ai), l'assistant d'Anthropic : mes compétences ne m'auraient pas permis de le coder entièrement seul. J'ai défini ce que l'app devait faire, fait les choix d'interface et testé chaque version au quotidien ; Claude a écrit une grande partie du code. Autant jouer cartes sur table.
+
 ## 📸 Captures d'écran
 
 <p align="center">

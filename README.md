@@ -23,6 +23,9 @@ You add your feeds yourself (no directory, no account, no recommendations), you 
 
 Flux is a native SwiftUI app, available in English and French, in light and dark mode.
 
+> [!NOTE]
+> **Built with the help of AI.** Flux is a personal project I built with [Claude](https://claude.ai), Anthropic's AI assistant: my skills alone wouldn't have been enough to code it entirely by myself. I decided what the app should do, made the design choices and tested every version in daily use; Claude wrote a large part of the code. Just being upfront about it.
+
 ## 📸 Screenshots
 
 <p align="center">
