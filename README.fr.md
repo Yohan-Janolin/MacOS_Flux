@@ -5,7 +5,7 @@
 <h1 align="center">Flux</h1>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-0.2-FF6A3D" alt="Version 0.2" />
+  <a href="https://github.com/Aervorn/MacOS_Flux/releases/latest"><img src="https://img.shields.io/github/v/release/Aervorn/MacOS_Flux?label=version&color=FF6A3D" alt="Latest version" /></a>
   <img src="https://img.shields.io/badge/macOS-14%2B-1C1B33?logo=apple&logoColor=white" alt="macOS 14+" />
   <img src="https://img.shields.io/badge/Apple%20Silicon%20%26%20Intel-universelle-60A5FA" alt="App universelle" />
   <a href="LICENSE"><img src="https://img.shields.io/badge/licence-MIT-2DD4BF" alt="Licence MIT" /></a>
@@ -151,9 +151,36 @@ Flux ne collecte rien et n'envoie rien te concernant. Pas de compte, pas de stat
 
 ## 📥 Installation
 
-Il n'y a pas encore de version à télécharger : pour l'instant, Flux se compile depuis les sources (voir plus bas). Ça prend deux minutes avec Xcode.
+1. Télécharge `Flux-x.y.z.dmg` depuis la [dernière version](https://github.com/Aervorn/MacOS_Flux/releases/latest).
+2. Ouvre-le et glisse **Flux** sur le dossier **Applications**.
+3. Lance Flux depuis ton dossier Applications.
+
+> [!WARNING]
+> **Flux n'est pas notarisé par Apple.** Il est signé avec le certificat de son auteur, pas avec un compte Apple Developer payant : macOS le bloque donc à la première ouverture. C'est normal, il suffit de l'autoriser une fois :
+>
+> 1. Ouvre Flux : macOS indique qu'il ne peut pas le vérifier. Clique sur **Terminé**.
+> 2. Ouvre **Réglages Système › Confidentialité et sécurité** et descends jusqu'à la section **Sécurité**.
+> 3. À côté du message concernant Flux, clique sur **Ouvrir quand même**, puis confirme avec ton mot de passe.
+>
+> Sur macOS 14 (Sonoma), tu peux aussi faire Contrôle-clic sur l'app et choisir **Ouvrir**.
+>
+> Si tu préfères le Terminal : `xattr -dr com.apple.quarantine /Applications/Flux.app`
+>
+> Tu peux vérifier que le téléchargement est authentique en comparant son empreinte SHA-256 (`shasum -a 256 Flux-x.y.z.dmg`) avec celle indiquée dans les notes de version.
+
+## 🔄 Mettre à jour
+
+Les mises à jour automatiques arriveront dans une prochaine version. En attendant, télécharge le nouveau DMG depuis la [page des versions](https://github.com/Aervorn/MacOS_Flux/releases) et remplace l'app dans ton dossier Applications. Tes flux, articles, favoris et réglages sont conservés.
 
 ## 📝 Historique des versions
+
+### 0.3.0
+- Première version téléchargeable (DMG).
+- Synchronisation entre Mac par iCloud Drive : flux, dossiers, noms, règles de filtrage, articles lus et favoris.
+- Taille du texte des articles réglable (⌘+ ou ⌘= / ⌘− / ⌘0).
+- « Récupérer les articles plus anciens » pour les flux qui ne publient que leurs derniers articles (sites WordPress).
+- Les favoris sont conservés quand leur flux est supprimé.
+- Regroupement des articles similaires plus fiable, fenêtre des réglages adaptée à son contenu.
 
 ### 0.2
 - Prise en charge de JSON Feed, vignettes en plein écran, filtres par mots-clés, archive des favoris et Historique, statistiques de lecture, regroupement des articles similaires de plusieurs sources, réglages en onglets.
@@ -179,21 +206,28 @@ Après un `git pull` qui ajoute ou supprime des fichiers, relance `xcodegen gene
 
 ```
 Flux/
-├── FluxApp.swift          point d'entrée, base SwiftData, fenêtres et menus
-├── Models.swift           Feed, Folder, Article
-├── FeedParser.swift       parser RSS / Atom et dates
-├── FeedStore.swift        ajout, actualisation, préparation hors ligne, OPML, nettoyage
-├── ArticleExtractor.swift Readability.js dans un WKWebView invisible
-├── ImageCache.swift       cache d'images sur disque, protocole flux-image://, miniatures
-├── HTMLUtils.swift        texte brut, entités, images, découverte de flux
-├── OPML.swift             import / export OPML
-├── Keyboard.swift         raccourcis à une touche
-├── Settings.swift         réglages, apparence, langue
-├── Views/                 interface SwiftUI
-├── en.lproj / fr.lproj    traductions
+├── FluxApp.swift            point d'entrée, base SwiftData, fenêtres et menus
+├── Models.swift             Feed, Folder, Article, FilterRule
+├── FeedParser.swift         parser RSS / Atom / JSON Feed et dates
+├── FeedStore.swift          ajout, actualisation, préparation hors ligne, OPML, nettoyage
+├── ArticleExtractor.swift   Readability.js dans un WKWebView invisible
+├── ImageCache.swift         cache d'images sur disque, protocole flux-image://, miniatures
+├── HTMLUtils.swift          texte brut, entités, images, découverte de flux
+├── OPML.swift               import / export OPML
+├── Filters.swift            règles de filtrage par mot-clé
+├── DuplicateDetector.swift  regroupement des articles similaires
+├── Sync.swift               synchronisation entre Mac par iCloud Drive
+├── Net.swift                session réseau
+├── Keyboard.swift           raccourcis à une touche
+├── Settings.swift           réglages, apparence, langue
+├── Views/                   interface SwiftUI
+├── en.lproj / fr.lproj      traductions
 └── Resources/Readability.js
-Design/                    icône de l'app (SVG, et le script Python qui génère les PNG)
+Design/                      icône de l'app (SVG, et le script Python qui génère les PNG), fond du DMG
+scripts/make-dmg.sh          fabrique le DMG d'une version
 ```
+
+Pour fabriquer un DMG comme ceux publiés, `scripts/make-dmg.sh` génère le projet, archive l'app, vérifie sa signature et crée l'image disque. Il faut [create-dmg](https://github.com/create-dmg/create-dmg) (`brew install create-dmg`) et un certificat de signature, dont le nom se règle en haut du script.
 
 ## 🤝 Contribuer et signaler un problème
 

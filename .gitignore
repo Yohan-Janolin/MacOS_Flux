@@ -67,3 +67,7 @@ Support/Info.plist
 
 # macOS
 .DS_Store
+
+# Script de release (scripts/make-dmg.sh)
+build/
+dist/

@@ -5,7 +5,7 @@
 <h1 align="center">Flux</h1>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-0.2-FF6A3D" alt="Version 0.2" />
+  <a href="https://github.com/Aervorn/MacOS_Flux/releases/latest"><img src="https://img.shields.io/github/v/release/Aervorn/MacOS_Flux?label=version&color=FF6A3D" alt="Latest version" /></a>
   <img src="https://img.shields.io/badge/macOS-14%2B-1C1B33?logo=apple&logoColor=white" alt="macOS 14+" />
   <img src="https://img.shields.io/badge/Apple%20Silicon%20%26%20Intel-universal-60A5FA" alt="Universal app" />
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-2DD4BF" alt="MIT License" /></a>
@@ -151,9 +151,36 @@ Flux collects nothing and sends nothing about you. There is no account, no analy
 
 ## 📥 Installation
 
-There's no downloadable version yet: for now, Flux is built from source (see below). It takes a couple of minutes with Xcode.
+1. Download `Flux-x.y.z.dmg` from the [latest release](https://github.com/Aervorn/MacOS_Flux/releases/latest).
+2. Open it and drag **Flux** onto the **Applications** folder.
+3. Launch Flux from your Applications folder.
+
+> [!WARNING]
+> **Flux isn't notarized by Apple.** It's signed with the author's own certificate, not with a paid Apple Developer account, so macOS blocks it the first time it's opened. This is expected; you only need to allow it once:
+>
+> 1. Open Flux: macOS says it can't verify it. Click **Done**.
+> 2. Open **System Settings › Privacy & Security** and scroll down to the **Security** section.
+> 3. Next to the message about Flux, click **Open Anyway**, then confirm with your password.
+>
+> On macOS 14 (Sonoma) you can instead Control-click the app and choose **Open**.
+>
+> If you prefer the Terminal: `xattr -dr com.apple.quarantine /Applications/Flux.app`
+>
+> You can check that the download is genuine by comparing its SHA-256 checksum (`shasum -a 256 Flux-x.y.z.dmg`) with the one given in the release notes.
+
+## 🔄 Updating
+
+Automatic updates will come in a future version. In the meantime, download the new DMG from the [releases page](https://github.com/Aervorn/MacOS_Flux/releases) and replace the app in your Applications folder. Your feeds, articles, favorites and settings are kept.
 
 ## 📝 Changelog
+
+### 0.3.0
+- First downloadable version (DMG).
+- Sync between Macs through iCloud Drive: feeds, folders, names, filter rules, read articles and favorites.
+- Adjustable article text size (⌘+ or ⌘= / ⌘− / ⌘0).
+- "Fetch Older Articles" for feeds that only publish their last few items (WordPress sites).
+- Favorites are kept when their feed is deleted.
+- More reliable grouping of similar articles, settings window that fits its content.
 
 ### 0.2
 - JSON Feed support, full-width thumbnails, keyword filters, favorites archive and History, reading statistics, grouping of similar articles from several sources, settings in tabs.
@@ -179,21 +206,28 @@ After a `git pull` that adds or removes files, run `xcodegen generate` again.
 
 ```
 Flux/
-├── FluxApp.swift          entry point, SwiftData database, windows and menus
-├── Models.swift           Feed, Folder, Article
-├── FeedParser.swift       RSS / Atom parser and dates
-├── FeedStore.swift        adding, refreshing, offline preparation, OPML, cleanup
-├── ArticleExtractor.swift Readability.js in a hidden WKWebView
-├── ImageCache.swift       disk image cache, flux-image:// protocol, thumbnails
-├── HTMLUtils.swift        plain text, entities, images, feed discovery
-├── OPML.swift             OPML import / export
-├── Keyboard.swift         single-key shortcuts
-├── Settings.swift         settings, appearance, language
-├── Views/                 SwiftUI interface
-├── en.lproj / fr.lproj    translations
+├── FluxApp.swift            entry point, SwiftData database, windows and menus
+├── Models.swift             Feed, Folder, Article, FilterRule
+├── FeedParser.swift         RSS / Atom / JSON Feed parser and dates
+├── FeedStore.swift          adding, refreshing, offline preparation, OPML, cleanup
+├── ArticleExtractor.swift   Readability.js in a hidden WKWebView
+├── ImageCache.swift         disk image cache, flux-image:// protocol, thumbnails
+├── HTMLUtils.swift          plain text, entities, images, feed discovery
+├── OPML.swift               OPML import / export
+├── Filters.swift            keyword filter rules
+├── DuplicateDetector.swift  grouping of similar articles
+├── Sync.swift               sync between Macs through iCloud Drive
+├── Net.swift                network session
+├── Keyboard.swift           single-key shortcuts
+├── Settings.swift           settings, appearance, language
+├── Views/                   SwiftUI interface
+├── en.lproj / fr.lproj      translations
 └── Resources/Readability.js
-Design/                    app icon (SVG, and the Python script that generates the PNGs)
+Design/                      app icon (SVG, and the Python script that generates the PNGs), DMG background
+scripts/make-dmg.sh          builds the DMG of a release
 ```
+
+To build a DMG like the published ones, `scripts/make-dmg.sh` generates the project, archives the app, checks its signature and creates the disk image. It needs [create-dmg](https://github.com/create-dmg/create-dmg) (`brew install create-dmg`) and a signing certificate, whose name is set at the top of the script.
 
 ## 🤝 Contributing & issues
 
