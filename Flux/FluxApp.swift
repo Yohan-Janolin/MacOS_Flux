@@ -83,6 +83,6 @@ struct FluxApp: App {
                 .environment(sync)
                 .modelContainer(container)
         }
-        .windowResizability(.contentMinSize)
+        .windowResizability(.contentSize)
     }
 }

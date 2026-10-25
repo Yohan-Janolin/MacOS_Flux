@@ -328,13 +328,11 @@ struct SettingsView: View {
 }
 
 extension View {
-    /// Onglet des réglages : chaque onglet a une hauteur prévue pour tout afficher sans
-    /// défilement ; la fenêtre la prend en changeant d'onglet. Elle reste redimensionnable
-    /// (au cas où le contenu grandit : nombreuses règles, autre langue…) et ne dépasse
-    /// jamais 85 % de la hauteur de l'écran.
+    /// Onglet des réglages : taille fixe propre à chaque onglet, prévue pour tout afficher
+    /// sans défilement. La fenêtre prend la taille de l'onglet affiché (avec animation),
+    /// sans dépasser 85 % de la hauteur de l'écran (au-delà, l'onglet défile).
     func settingsTab(idealHeight: CGFloat) -> some View {
         let screen = NSScreen.main?.visibleFrame.height ?? 900
-        return frame(minWidth: 600, idealWidth: 620, maxWidth: .infinity,
-                     minHeight: 320, idealHeight: min(idealHeight, screen * 0.85), maxHeight: .infinity)
+        return frame(width: 600, height: min(idealHeight, screen * 0.85))
     }
 }
