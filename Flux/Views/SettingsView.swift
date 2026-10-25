@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 struct SettingsView: View {
@@ -85,6 +86,7 @@ struct SettingsView: View {
                 }
             }
             .formStyle(.grouped)
+            .settingsTab()
             .tabItem { Label("Général", systemImage: "gearshape") }
 
             Form {
@@ -158,9 +160,11 @@ struct SettingsView: View {
                 }
             }
             .formStyle(.grouped)
+            .settingsTab()
             .tabItem { Label("Lecture", systemImage: "book") }
 
             FiltersSettingsView()
+                .settingsTab()
                 .tabItem { Label("Filtres", systemImage: "line.3.horizontal.decrease.circle") }
 
             Form {
@@ -254,12 +258,13 @@ struct SettingsView: View {
                 }
             }
             .formStyle(.grouped)
+            .settingsTab()
             .tabItem { Label("Stockage", systemImage: "internaldrive") }
 
             SyncSettingsView()
+                .settingsTab()
                 .tabItem { Label("Synchronisation", systemImage: "icloud") }
         }
-        .frame(width: 580, height: 520)
         .onChange(of: appearance) {
             AppAppearance.apply(appearance)
         }
@@ -321,3 +326,15 @@ struct SettingsView: View {
         affectedCount = store.unreadCount(olderThanDays: draftAutoReadDays)
     }
 }
+
+extension View {
+    /// Onglet des réglages : largeur fixe, hauteur adaptée au contenu.
+    /// La fenêtre des réglages prend la taille de l'onglet affiché (avec animation),
+    /// sans dépasser 85 % de la hauteur de l'écran : au-delà, l'onglet défile.
+    func settingsTab() -> some View {
+        frame(width: 600)
+            .frame(maxHeight: (NSScreen.main?.visibleFrame.height ?? 900) * 0.85)
+            .fixedSize(horizontal: false, vertical: true)
+    }
+}
+
